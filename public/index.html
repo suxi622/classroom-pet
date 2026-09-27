@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>课堂互动乐园 - 答题赚学分，快乐养宠物</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  .pet-bounce { animation: bounce 2s infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  .fade-in { animation: fadeIn .3s ease-in; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .card-hover { transition: all .3s ease; }
+  .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(0,0,0,.1); }
+  body { background: linear-gradient(135deg,#f0f9ff 0%,#f0fdf4 100%); min-height:100vh; }
+  .bar { transition: width .5s ease; }
+  .nav-btn { transition: all .2s; }
+  .nav-btn.active { background:#fff; color:#0284c7; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+  .shake { animation: shake .4s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+  .toast-in { animation: toastIn .3s ease; }
+  @keyframes toastIn { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
+  .battle-flash { animation: flash .5s; }
+  @keyframes flash { 0%{background:#fef08a} 100%{background:transparent} }
+  ::-webkit-scrollbar { width:8px;height:8px }
+  ::-webkit-scrollbar-thumb { background:#cbd5e1;border-radius:4px }
+</style>
+</head>
+<body class="font-sans text-gray-800">
+
+<!-- ============ 登录 ============ -->
+<div id="view-login" class="view min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden fade-in">
+    <div class="bg-gradient-to-r from-sky-400 to-emerald-400 p-8 text-white text-center">
+      <div class="text-5xl mb-3 pet-bounce">🐱</div>
+      <h1 class="text-2xl font-bold mb-2">课堂互动乐园</h1>
+      <p class="text-white/90 text-sm">答题赚学分 · 养专属宠物 · 快乐学习</p>
+    </div>
+    <div class="flex border-b">
+      <button id="login-tab-student" class="flex-1 py-3 text-center font-medium text-sky-600 border-b-2 border-sky-500" onclick="switchLoginType('student')">学生登录</button>
+      <button id="login-tab-teacher" class="flex-1 py-3 text-center font-medium text-gray-500" onclick="switchLoginType('teacher')">教师登录</button>
+    </div>
+    <div class="p-6">
+      <div id="login-form-student">
+        <div class="mb-3">
+          <label class="block text-sm font-medium text-gray-700 mb-1">班级码</label>
+          <input id="li-code" placeholder="输入老师分享的班级码" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-400 outline-none uppercase">
+        </div>
+        <div class="mb-3"><input id="li-sname" placeholder="用户名" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-400 outline-none"></div>
+        <div class="mb-4"><input id="li-spwd" type="password" placeholder="密码" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-400 outline-none"></div>
+        <button onclick="doLogin('student')" class="w-full bg-gradient-to-r from-sky-500 to-emerald-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition mb-3">开始学习之旅</button>
+        <p class="text-center text-sm text-gray-500">还没有账号？<a href="#" onclick="showRegister('student');return false;" class="text-sky-600 hover:underline">立即注册 →</a></p>
+      </div>
+      <div id="login-form-teacher" class="hidden">
+        <div class="mb-3"><input id="li-tname" placeholder="教师用户名" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-400 outline-none"></div>
+        <div class="mb-4"><input id="li-tpwd" type="password" placeholder="密码" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-400 outline-none"></div>
+        <button onclick="doLogin('teacher')" class="w-full bg-gradient-to-r from-sky-500 to-emerald-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition mb-3">进入管理后台</button>
+        <p class="text-center text-sm text-gray-500">还没有账号？<a href="#" onclick="showRegister('teacher');return false;" class="text-sky-600 hover:underline">立即注册 →</a></p>
+      </div>
+    </div>
+    <div class="bg-gray-50 px-6 py-4 grid grid-cols-3 gap-2 text-center text-xs text-gray-600">
+      <div><div class="text-xl mb-1">📚</div><p>趣味答题</p></div>
+      <div><div class="text-xl mb-1">🐾</div><p>宠物养成</p></div>
+      <div><div class="text-xl mb-1">⚔️</div><p>实时对战</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 学生注册 ============ -->
+<div id="view-reg-student" class="view min-h-screen hidden items-center justify-center p-4 flex">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 fade-in">
+    <h2 class="text-xl font-bold text-center mb-1">创建账号 🎉</h2>
+    <p class="text-center text-gray-500 text-sm mb-6">🌸 学习让梦想开花 🌸</p>
+    <div class="mb-3"><label class="block text-sm font-medium text-gray-700 mb-1">班级码（找老师获取）</label><input id="rg-code" placeholder="班级码" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-sky-400 uppercase"></div>
+    <div class="mb-3"><label class="block text-sm font-medium text-gray-700 mb-1">姓名</label><input id="rg-name" placeholder="你的姓名" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-sky-400"></div>
+    <div class="mb-3"><label class="block text-sm font-medium text-gray-700 mb-1">用户名（至少3位）</label><input id="rg-username" placeholder="用户名" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-sky-400"></div>
+    <div class="mb-3"><label class="block text-sm font-medium text-gray-700 mb-1">密码（至少6位）</label><input id="rg-pwd" type="password" placeholder="密码" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-sky-400"></div>
+    <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">选择你的小伙伴 🐾</label>
+      <div id="rg-species" class="grid grid-cols-3 gap-2"></div>
+      <input id="rg-petname" placeholder="给它起个名字吧（默认：你的名字+的宠物）" class="mt-3 w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-sky-400">
+    </div>
+    <button onclick="doRegister('student')" class="w-full bg-gradient-to-r from-sky-500 to-emerald-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition mb-3">注册中...</button>
+    <p class="text-center text-sm text-gray-500">已有账号？<a href="#" onclick="showView('login');return false;" class="text-sky-600 hover:underline">去登录 →</a></p>
+  </div>
+</div>
+
+<!-- ============ 教师注册 ============ -->
+<div id="view-reg-teacher" class="view min-h-screen hidden items-center justify-center p-4 flex">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 fade-in">
+    <h2 class="text-xl font-bold text-center mb-1">教师注册 👩‍🏫</h2>
+    <p class="text-center text-gray-500 text-sm mb-3">注册后需设置你的班级和班级码</p>
+    <p class="text-center text-xs bg-amber-50 text-amber-700 rounded-lg px-3 py-2 mb-4">⚠️ 仅老师在此注册！如果你是学生，请<a href="#" onclick="showRegister('student');return false;" class="underline">返回学生注册</a>（学生需要班级码，注册后可以答题赚学分、兑换食物、养宠物）</p>
+    <div class="mb-3"><label class="block text-sm font-medium text-gray-700 mb-1">姓名</label><input id="rg-t-name" placeholder="老师姓名" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-sky-400"></div>
+    <div class="mb-3"><label class="block text-sm font-medium text-gray-700 mb-1">用户名（至少3位）</label><input id="rg-t-username" placeholder="用户名" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-sky-400"></div>
+    <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">密码（至少6位）</label><input id="rg-t-pwd" type="password" placeholder="密码" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-sky-400"></div>
+    <button onclick="doRegister('teacher')" class="w-full bg-gradient-to-r from-sky-500 to-emerald-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition mb-3">注册并设置班级</button>
+    <p class="text-center text-sm text-gray-500">已有账号？<a href="#" onclick="showView('login');return false;" class="text-sky-600 hover:underline">去登录 →</a></p>
+  </div>
+</div>
+
+<!-- ============ 班级设置向导 ============ -->
+<div id="view-wizard" class="view min-h-screen hidden items-center justify-center p-4 flex">
+  <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl p-8 fade-in">
+    <h2 class="text-xl font-bold text-center mb-1">设置你的班级 🏫</h2>
+    <p class="text-center text-gray-500 text-sm mb-6">每位老师登录后必须设置班级，系统会为每个班级生成专属班级码，学生凭码加入</p>
+    <div id="wiz-rows"></div>
+    <button onclick="wizAddRow()" class="w-full border-2 border-dashed border-gray-300 rounded-xl py-3 text-gray-500 hover:border-sky-400 hover:text-sky-600 transition text-sm mb-5">+ 添加一个班级</button>
+    <button id="wiz-btn" onclick="wizSubmit()" class="w-full bg-gradient-to-r from-sky-500 to-emerald-500 text-white py-3 rounded-lg font-medium hover:opacity-90 transition">完成设置，进入管理后台</button>
+  </div>
+</div>
+
+<!-- ============ 教师端 ============ -->
+<div id="view-teacher" class="view hidden min-h-screen">
+  <nav class="bg-white shadow-sm sticky top-0 z-20">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-2 flex-wrap">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">📚</span>
+        <span class="font-bold text-lg text-sky-700">教师管理后台</span>
+      </div>
+      <div class="flex items-center gap-3 flex-wrap">
+        <button onclick="tNav('dash')" class="nav-btn active px-3 py-1.5 rounded-lg text-sm font-medium" data-nav="dash">🏠 仪表盘</button>
+        <button onclick="tNav('classes')" class="nav-btn px-3 py-1.5 rounded-lg text-sm font-medium" data-nav="classes">🏫 班级管理</button>
+        <button onclick="tNav('questions')" class="nav-btn px-3 py-1.5 rounded-lg text-sm font-medium" data-nav="questions">📝 题库</button>
+        <button onclick="tNav('assignments')" class="nav-btn px-3 py-1.5 rounded-lg text-sm font-medium" data-nav="assignments">📋 作业管理</button>
+        <button onclick="tNav('msgs')" class="nav-btn px-3 py-1.5 rounded-lg text-sm font-medium relative" data-nav="msgs">🔔 消息<span id="t-unread-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">0</span></button>
+        <button onclick="logout()" class="text-sm text-gray-500 hover:text-gray-700">退出</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 仪表盘 -->
+  <main id="t-dash" class="t-sec max-w-6xl mx-auto p-4 fade-in">
+    <div class="grid md:grid-cols-4 gap-4 mb-6" id="t-dash-cards"></div>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-white rounded-2xl p-5 shadow-sm">
+        <div class="flex justify-between items-center mb-4"><h3 class="font-bold">📋 最近的作业</h3><button onclick="tNav('assignments')" class="text-sm text-sky-600">全部 →</button></div>
+        <div id="t-dash-assignments" class="space-y-3"></div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm">
+        <h3 class="font-bold mb-4">🔔 最新消息</h3>
+        <div id="t-dash-msgs" class="space-y-3"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 班级管理 -->
+  <main id="t-classes" class="t-sec max-w-6xl mx-auto p-4 hidden fade-in">
+    <div class="bg-white rounded-2xl p-6 shadow-sm">
+      <div class="flex justify-between items-center mb-4">
+        <div>
+          <h3 class="font-bold text-lg">班级管理</h3>
+          <p class="text-sm text-gray-500">把班级码分享给学生，学生凭码加入你的班级</p>
+        </div>
+        <button onclick="openAddClass()" class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm transition">+ 创建班级</button>
+      </div>
+      <div id="t-classes-list"></div>
+    </div>
+  </main>
+
+  <!-- 题库 -->
+  <main id="t-questions" class="t-sec max-w-6xl mx-auto p-4 hidden fade-in">
+    <div class="bg-white rounded-2xl p-6 shadow-sm">
+      <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <div><h3 class="font-bold text-lg">题目管理</h3><p class="text-sm text-gray-500">支持选择题、填空题、判断题、简答题</p></div>
+        <div class="flex gap-2">
+          <button onclick="importSamples()" class="border border-emerald-400 text-emerald-600 px-3 py-2 rounded-lg text-sm hover:bg-emerald-50 transition">✨ 一键导入示例题</button>
+          <button onclick="openCreateQuestion()" class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm transition">+ 新建题目</button>
+        </div>
+      </div>
+      <div id="t-questions-list" class="space-y-3"></div>
+    </div>
+  </main>
+
+  <!-- 作业管理 -->
+  <main id="t-assignments" class="t-sec max-w-6xl mx-auto p-4 hidden fade-in">
+    <div class="bg-white rounded-2xl p-6 shadow-sm">
+      <div class="flex justify-between items-center mb-4">
+        <div><h3 class="font-bold text-lg">作业管理</h3><p class="text-sm text-gray-500">布置传统作业或对战作业，设置截止时间</p></div>
+        <button onclick="openCreateAssignment()" class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm transition">+ 布置作业</button>
+      </div>
+      <div id="t-assignments-list" class="space-y-3"></div>
+    </div>
+  </main>
+
+  <!-- 作业详情 -->
+  <main id="t-adetail" class="t-sec max-w-6xl mx-auto p-4 hidden fade-in">
+    <button onclick="tNav('assignments')" class="text-sm text-gray-500 hover:text-gray-700 mb-3">← 返回作业列表</button>
+    <div id="t-adetail-head"></div>
+    <div class="flex gap-2 mb-4">
+      <button onclick="adetailTab('subs')" id="adetail-tab-subs" class="px-4 py-2 rounded-lg text-sm font-medium bg-sky-500 text-white">学生提交情况</button>
+      <button onclick="adetailTab('stats')" id="adetail-tab-stats" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600">学情统计对比</button>
+    </div>
+    <div id="adetail-subs"></div>
+    <div id="adetail-stats" class="hidden"></div>
+  </main>
+
+  <!-- 消息 -->
+  <main id="t-msgs" class="t-sec max-w-6xl mx-auto p-4 hidden fade-in">
+    <div class="bg-white rounded-2xl p-6 shadow-sm">
+      <h3 class="font-bold text-lg mb-4">消息中心</h3>
+      <div id="t-msgs-list" class="space-y-2"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ============ 学生端 ============ -->
+<div id="view-student" class="view hidden min-h-screen">
+  <nav class="bg-white shadow-sm sticky top-0 z-20">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-2 flex-wrap">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">🐱</span>
+        <span class="font-bold text-lg text-sky-700">课堂互动乐园</span>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex items-center gap-1 bg-amber-50 px-3 py-1 rounded-full">
+          <span>⭐</span><span class="font-medium text-amber-700" id="s-credits">0</span><span class="text-xs text-amber-600">学分</span>
+        </div>
+        <button onclick="sNav('home')" class="nav-btn active px-3 py-1.5 rounded-lg text-sm font-medium" data-nav="home">🏠 首页</button>
+        <button onclick="sNav('rank')" class="nav-btn px-3 py-1.5 rounded-lg text-sm font-medium" data-nav="rank">🏆 排行榜</button>
+        <button onclick="sNav('shop')" class="nav-btn px-3 py-1.5 rounded-lg text-sm font-medium" data-nav="shop">🛍️ 商店</button>
+        <button onclick="sNav('pet')" class="nav-btn px-3 py-1.5 rounded-lg text-sm font-medium" data-nav="pet">🐾 宠物</button>
+        <button onclick="logout()" class="text-sm text-gray-500 hover:text-gray-700">退出</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 学生首页 -->
+  <main id="s-home" class="s-sec max-w-6xl mx-auto p-4 fade-in">
+    <div class="grid md:grid-cols-3 gap-4 mb-6">
+      <div class="md:col-span-2 bg-white rounded-2xl p-6 shadow-sm card-hover" id="s-pet-card"></div>
+      <div class="space-y-4">
+        <button onclick="sNav('assignment')" class="w-full bg-gradient-to-r from-sky-500 to-sky-600 text-white p-5 rounded-2xl text-left card-hover">
+          <div class="text-2xl mb-2">✏️</div><h3 class="font-bold text-lg">我的作业</h3><p class="text-sky-100 text-sm">完成作业赚学分</p>
+        </button>
+        <button onclick="sNav('practice')" class="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-white p-5 rounded-2xl text-left card-hover">
+          <div class="text-2xl mb-2">🎯</div><h3 class="font-bold text-lg">自由练习</h3><p class="text-emerald-100 text-sm">随机刷题赚学分</p>
+        </button>
+        <button onclick="sNav('shop')" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white p-5 rounded-2xl text-left card-hover">
+          <div class="text-2xl mb-2">🛍️</div><h3 class="font-bold text-lg">学分商店</h3><p class="text-amber-100 text-sm">食物 · 延时铃 · 宠物用品</p>
+        </button>
+      </div>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+      <div class="bg-white rounded-2xl p-5 shadow-sm">
+        <h3 class="font-bold mb-4">📋 作业列表</h3>
+        <div id="s-home-assignments" class="space-y-2"></div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm">
+        <h3 class="font-bold mb-4">🏆 积分榜 TOP3</h3>
+        <div id="s-home-lb" class="space-y-2"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 作业列表页 -->
+  <main id="s-assignment" class="s-sec max-w-4xl mx-auto p-4 hidden fade-in">
+    <div class="bg-white rounded-2xl p-6 shadow-sm">
+      <h3 class="font-bold text-lg mb-1">📋 我的作业</h3>
+      <p class="text-sm text-gray-500 mb-4">完成作业赚取学分，喂养你的小宠物！</p>
+      <div id="s-assignment-list" class="space-y-3"></div>
+    </div>
+  </main>
+
+  <!-- 作业详情 -->
+  <main id="s-adetail" class="s-sec max-w-3xl mx-auto p-4 hidden fade-in">
+    <button onclick="sNav('assignment')" class="text-sm text-gray-500 hover:text-gray-700 mb-3">← 返回作业列表</button>
+    <div id="s-adetail-box"></div>
+  </main>
+
+  <!-- 自由练习 -->
+  <main id="s-practice" class="s-sec max-w-3xl mx-auto p-4 hidden fade-in">
+    <button onclick="sNav('home')" class="text-sm text-gray-500 hover:text-gray-700 mb-3">← 返回首页</button>
+    <div id="s-practice-box"></div>
+  </main>
+
+  <!-- 排行榜 -->
+  <main id="s-rank" class="s-sec max-w-3xl mx-auto p-4 hidden fade-in">
+    <div class="bg-white rounded-2xl p-6 shadow-sm">
+      <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <h3 class="font-bold text-lg">🏆 实时积分榜</h3>
+        <div class="flex gap-2">
+          <button onclick="rankScope('mine', this)" class="px-3 py-1.5 rounded-lg text-sm bg-sky-500 text-white">班级排名</button>
+          <button onclick="rankScope('all', this)" class="px-3 py-1.5 rounded-lg text-sm bg-gray-100 text-gray-600">全服排名</button>
+        </div>
+      </div>
+      <div id="s-rank-tip" class="mb-3 text-sm text-gray-500"></div>
+      <div id="s-rank-list" class="space-y-2"></div>
+    </div>
+  </main>
+
+  <!-- 商店 -->
+  <main id="s-shop" class="s-sec max-w-5xl mx-auto p-4 hidden fade-in">
+    <div class="flex gap-2 mb-4 flex-wrap">
+      <button onclick="shopTab('food', this)" class="px-4 py-2 rounded-lg text-sm bg-sky-500 text-white">🍖 食物</button>
+      <button onclick="shopTab('tool', this)" class="px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-600">🔔 实用工具</button>
+      <button onclick="shopTab('pet', this)" class="px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-600">🧸 宠物用具</button>
+      <button onclick="shopTab('dress', this)" class="px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-600">🎀 装扮用品</button>
+      <button onclick="shopTab('bag', this)" class="px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-600">🎒 我的背包</button>
+    </div>
+    <div id="s-shop-list" class="grid md:grid-cols-3 gap-4"></div>
+  </main>
+
+  <!-- 宠物页 -->
+  <main id="s-pet" class="s-sec max-w-5xl mx-auto p-4 hidden fade-in">
+    <div class="flex gap-2 mb-4 flex-wrap">
+      <button onclick="petTab('main', this)" class="px-4 py-2 rounded-lg text-sm bg-sky-500 text-white">🐾 宠物主页</button>
+      <button onclick="petTab('chat', this)" class="px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-600">💬 对话安抚</button>
+      <button onclick="petTab('house', this)" class="px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-600">🏡 宠物小窝</button>
+      <button onclick="petTab('dress', this)" class="px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-600">🎀 装扮</button>
+      <button onclick="petTab('square', this)" class="px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-600">🌐 宠物广场</button>
+      <button onclick="petTab('more', this)" class="px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-600">🎮 更多玩法</button>
+    </div>
+    <div id="s-pet-box"></div>
+  </main>
+</div>
+
+<!-- ============ 对战界面 ============ -->
+<div id="view-battle" class="hidden fixed inset-0 bg-slate-900/95 z-50 overflow-y-auto">
+  <div class="min-h-full flex items-center justify-center p-4">
+    <div id="battle-box" class="w-full max-w-2xl"></div>
+  </div>
+</div>
+
+<!-- ============ 弹窗 ============ -->
+<div id="modal-backdrop" class="hidden fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4" onclick="if(event.target===this)closeModal()">
+  <div id="modal-box" class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6 fade-in"></div>
+</div>
+
+<div id="toast-box" class="fixed top-4 right-4 z-[60] space-y-2"></div>
+
+<script>
+/* ================= 工具 ================= */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s)); // 返回真数组，支持 .map
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDT = ts => new Date(ts).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+const fmtFull = ts => new Date(ts).toLocaleString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+function countdown(ts) {
+  const diff = ts - Date.now();
+  if (diff <= 0) return '已截止';
+  const h = Math.floor(diff / 3600000), m = Math.floor(diff % 3600000 / 60000), s = Math.floor(diff % 60000 / 1000);
+  if (h > 24) return Math.floor(h / 24) + '天' + (h % 24) + '小时';
+  return (h ? h + '小时' : '') + m + '分' + s + '秒';
+}
+function toast(msg, ok = true) {
+  const el = document.createElement('div');
+  el.className = 'toast-in bg-white shadow-lg rounded-xl px-4 py-3 text-sm flex items-center gap-2 max-w-xs';
+  el.innerHTML = (ok ? '<span class="text-emerald-500">✔</span>' : '<span class="text-red-500">✖</span>') + '<span>' + esc(msg) + '</span>';
+  $('#toast-box').appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .4s'; setTimeout(() => el.remove(), 400); }, 3000);
+}
+const GRADE_STYLE = { 'A+': 'bg-emerald-500', 'A': 'bg-emerald-400', 'B+': 'bg-sky-400', 'B': 'bg-sky-300', 'C': 'bg-amber-400', 'D': 'bg-red-400' };
+const TYPE_NAME = { choice: '选择题', fill: '填空题', judge: '判断题', short: '简答题' };
+const TYPE_ICON = { choice: '🔘', fill: '✍️', judge: '⚖️', short: '📄' };
+const SPECIES_UI = {
+  cat: { label: '猫咪', emoji: '🐱' }, dog: { label: '狗狗', emoji: '🐶' }, dragon: { label: '小龙', emoji: '🐲' },
+  fox: { label: '狐狸', emoji: '🦊' }, dino: { label: '恐龙', emoji: '🦕' }, penguin: { label: '企鹅', emoji: '🐧' },
+};
+
+/* ================= 状态 ================= */
+let S = { token: localStorage.getItem('cp_token') || '', user: null, ws: null, shopCache: null, lbScope: 'mine' };
+let pendingBattleNext = null;
+
+async function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (S.token) headers['Authorization'] = 'Bearer ' + S.token;
+  const res = await fetch(path, { method: opts.method || 'GET', headers, body: opts.body ? JSON.stringify(opts.body) : undefined });
+  let data = {};
+  try { data = await res.json(); } catch {}
+  if (res.status === 401) { logout(true); throw new Error('请重新登录'); }
+  if (!res.ok || data.error) throw new Error(data.error || ('请求失败 ' + res.status));
+  return data;
+}
+
+/* ================= 视图 ================= */
+function showView(name) {
+  $$('.view').forEach(v => v.classList.add('hidden'));
+  const el = $('#view-' + name);
+  el.classList.remove('hidden');
+  window.scrollTo(0, 0);
+  if (name === 'teacher') tNav('dash');
+  if (name === 'student') sNav('home');
+}
+
+/* ================= 登录/注册 ================= */
+function switchLoginType(type) {
+  $('#login-tab-student').className = 'flex-1 py-3 text-center font-medium ' + (type === 'student' ? 'text-sky-600 border-b-2 border-sky-500' : 'text-gray-500');
+  $('#login-tab-teacher').className = 'flex-1 py-3 text-center font-medium ' + (type === 'teacher' ? 'text-sky-600 border-b-2 border-sky-500' : 'text-gray-500');
+  $('#login-form-student').classList.toggle('hidden', type !== 'student');
+  $('#login-form-teacher').classList.toggle('hidden', type !== 'teacher');
+}
+async function doLogin(role) {
+  try {
+    const body = role === 'student'
+      ? { username: $('#li-sname').value.trim(), password: $('#li-spwd').value, classCode: $('#li-code').value.trim() }
+      : { username: $('#li-tname').value.trim(), password: $('#li-tpwd').value };
+    if (!body.username || !body.password) return toast('请填写用户名和密码', false);
+    if (role === 'student' && !body.classCode) return toast('请输入班级码', false);
+    const r = await api('/api/auth/login', { method: 'POST', body });
+    S.token = r.token; S.user = r.user;
+    localStorage.setItem('cp_token', S.token);
+    connectWS();
+    toast(role === 'student' ? '欢迎回来，' + r.user.name + '！' : '欢迎回来，' + r.user.name + '老师！');
+    if (role === 'teacher') { const cls = await api('/api/classes'); if (!cls.classes.length) return showView('wizard'); showView('teacher'); }
+    else showView('student');
+  } catch (e) { toast(e.message, false); }
+}
+function showRegister(role) { showView(role === 'student' ? 'reg-student' : 'reg-teacher'); if (role === 'student' && !$('#rg-species').children.length) renderSpeciesPicker(); }
+function renderSpeciesPicker() {
+  let sel = 'cat';
+  $('#rg-species').innerHTML = Object.entries(SPECIES_UI).map(([k, v]) =>
+    `<div class="border-2 border-gray-200 rounded-xl p-2 text-center cursor-pointer hover:border-sky-400 transition" data-sp="${k}" onclick="pickSpecies('${k}')">
+      <div class="text-3xl">${v.emoji}</div><p class="text-xs mt-1">${v.label}</p></div>`).join('');
+  pickSpecies(sel);
+}
+function pickSpecies(k) {
+  $$('#rg-species [data-sp]').forEach(el => el.className = 'border-2 ' + (el.dataset.sp === k ? 'border-sky-400 bg-sky-50' : 'border-gray-200') + ' rounded-xl p-2 text-center cursor-pointer hover:border-sky-400 transition');
+  $('#rg-species').dataset.val = k;
+}
+async function doRegister(role) {
+  try {
+    if (role === 'student') {
+      const body = {
+        role: 'student', username: $('#rg-username').value.trim(), password: $('#rg-pwd').value,
+        name: $('#rg-name').value.trim(), classCode: $('#rg-code').value.trim(),
+        species: $('#rg-species').dataset.val || 'cat', petName: $('#rg-petname').value.trim() || undefined,
+      };
+      if (!body.name) return toast('请填写姓名', false);
+      if (body.username.length < 3) return toast('用户名至少 3 个字符', false);
+      if (body.password.length < 6) return toast('密码至少 6 位', false);
+      if (!body.classCode) return toast('请输入班级码', false);
+      const r = await api('/api/auth/register', { method: 'POST', body });
+      S.token = r.token; S.user = r.user; localStorage.setItem('cp_token', S.token); connectWS();
+      toast('注册成功！' + (SPECIES_UI[body.species]?.emoji || '🐱') + ' 已加入你的身边');
+      showView('student');
+    } else {
+      const body = { role: 'teacher', username: $('#rg-t-username').value.trim(), password: $('#rg-t-pwd').value, name: $('#rg-t-name').value.trim() };
+      if (!body.name) return toast('请填写姓名', false);
+      if (body.username.length < 3) return toast('用户名至少 3 个字符', false);
+      if (body.password.length < 6) return toast('密码至少 6 位', false);
+      const r = await api('/api/auth/register', { method: 'POST', body });
+      S.token = r.token; S.user = r.user; localStorage.setItem('cp_token', S.token); connectWS();
+      toast('注册成功！请设置你的班级');
+      showView('wizard');
+    }
+  } catch (e) { toast(e.message, false); }
+}
+/* 班级向导 */
+function wizAddRow(grade = '', name = '') {
+  const row = document.createElement('div');
+  row.className = 'flex gap-2 mb-2 fade-in';
+  row.innerHTML = `<input placeholder="班级名称（如：四年级1班）" value="${esc(name)}" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-sky-400 text-sm">
+    <input placeholder="年级（用于年级比较）" value="${esc(grade)}" class="w-32 px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-sky-400 text-sm">
+    <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-red-500 px-2">✕</button>`;
+  $('#wiz-rows').appendChild(row);
+}
+async function wizSubmit() {
+  const rows = $$('#wiz-rows > div');
+  const classes = [];
+  rows.forEach(r => {
+    const [name, grade] = r.querySelectorAll('input');
+    if (name.value.trim()) classes.push({ name: name.value.trim(), grade: grade.value.trim() || '未设置' });
+  });
+  if (!classes.length) return toast('请至少设置一个班级', false);
+  try {
+    $('#wiz-btn').disabled = true;
+    const created = [];
+    for (const c of classes) { const r = await api('/api/classes', { method: 'POST', body: c }); created.push(r.cls); }
+    $('#wiz-btn').disabled = false;
+    openModal(`<h3 class="font-bold text-lg mb-4">✅ 班级设置完成！</h3>
+      <p class="text-sm text-gray-500 mb-4">请把下面的班级码发给对应班级的学生，学生登录时必须输入班级码：</p>
+      <div class="space-y-2 mb-4">${created.map(c => `
+        <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
+          <span class="font-medium">${esc(c.name)} <span class="text-xs text-gray-400">（${esc(c.grade)}）</span></span>
+          <span class="font-mono font-bold text-sky-600 text-lg tracking-widest">${esc(c.code)}</span>
+        </div>`).join('')}</div>
+      <button onclick="closeModal();showView('teacher')" class="w-full bg-gradient-to-r from-sky-500 to-emerald-500 text-white py-3 rounded-lg font-medium">进入管理后台</button>`);
+  } catch (e) { $('#wiz-btn').disabled = false; toast(e.message, false); }
+}
+function logout(silent) {
+  S.token = ''; S.user = null;
+  localStorage.removeItem('cp_token');
+  if (S.ws) { try { S.ws.close(); } catch {} S.ws = null; }
+  showView('login');
+  if (!silent) toast('已退出登录');
+}
+
+/* ================= WebSocket ================= */
+function connectWS() {
+  if (!S.token || S.ws) return;
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const ws = new WebSocket(`${proto}//${location.host}/ws?token=${S.token}`);
+  S.ws = ws;
+  ws.onopen = () => {
+    if (S.user?.role === 'student') {
+      sendWSMsg({ t: 'sub', topic: 'lb' });
+      if (S.user.class_id) sendWSMsg({ t: 'sub', topic: 'lb:' + S.user.class_id });
+      sendWSMsg({ t: 'sub', topic: 'u:' + S.user.id });
+    } else {
+      sendWSMsg({ t: 'sub', topic: 't:' + S.user.id });
+    }
+  };
+  ws.onclose = () => { S.ws = null; if (S.token) setTimeout(connectWS, 3000); };
+  ws.onmessage = e => handleWSMsg(JSON.parse(e.data));
+}
+function sendWSMsg(m) { if (S.ws && S.ws.readyState === 1) S.ws.send(JSON.stringify(m)); }
+function handleWSMsg(m) {
+  if (m.t === 'lb') {
+    const top3 = m.data.slice(0, 3);
+    const box = $('#s-home-lb');
+    if (box) box.innerHTML = top3.map(x => `
+      <div class="flex items-center gap-3 py-1.5">
+        <span class="text-xl">${x.icon || (['4️⃣','5️⃣','6️⃣'][x.rank - 1] || x.rank)}</span>
+        <span class="font-medium flex-1">${esc(x.name)}${x.title ? '<span class="text-xs text-amber-500 ml-1">' + esc(x.title) + '</span>' : ''}</span>
+        <span class="font-bold text-amber-600">${x.credits} 分</span>
+      </div>`).join('') || '<p class="text-sm text-gray-400">暂无数据</p>';
+    if ($('#s-rank-list') && S.lbScope === 'mine') renderRankList(m.data);
+  }
+  if (m.t === 'notify' && S.user?.role === 'teacher') {
+    toast('🔔 ' + m.data.content);
+    const badge = $('#t-unread-badge');
+    if (badge) { badge.classList.remove('hidden'); badge.textContent = Number(badge.textContent) + 1; }
+    if (!$('#t-msgs').classList.contains('hidden')) loadNotifications();
+    if (!$('#t-dash').classList.contains('hidden')) loadDashMsgs();
+  }
+  if (m.t === 'new_assignment') { toast('📋 老师布置了新作业：「' + m.data.title + '」'); if (!$('#s-home').classList.contains('hidden')) loadStudentHome(); }
+  if (m.t === 'graded') { toast(`📝 作业已批改：${m.data.grade}${m.data.comment ? ' - ' + m.data.comment : ''}`); if (!$('#s-adetail').classList.contains('hidden')) loadAssignmentDetail(SAid); }
+  if (m.t === 'levelup') { toast(`🎉 恭喜！宠物升到 ${m.data.level} 级，解锁：${m.data.unlock || '新能力'}`); if (!$('#s-pet').classList.contains('hidden')) loadPet(); }
+  if (m.t === 'battle') handleBattleMsg(m);
+}
+
+/* ================= 教师端 ================= */
+function tNav(sec) {
+  $$('.t-sec').forEach(el => el.classList.add('hidden'));
+  $('#t-' + sec).classList.remove('hidden');
+  $$('#view-teacher [data-nav]').forEach(b => b.classList.toggle('active', b.dataset.nav === sec));
+  window.scrollTo(0, 0);
+  if (sec === 'dash') loadDash();
+  if (sec === 'classes') loadClasses();
+  if (sec === 'questions') loadQuestions();
+  if (sec === 'assignments') loadAssignments();
+  if (sec === 'msgs') loadNotifications();
+}
+async function loadDash() {
+  try {
+    const [cls, qs, as, ns] = await Promise.all([api('/api/classes'), api('/api/questions'), api('/api/assignments'), api('/api/notifications')]);
+    const students = cls.classes.reduce((s, c) => s + c.student_count, 0);
+    $('#t-dash-cards').innerHTML = `
+      <div class="bg-white rounded-xl p-4 shadow-sm"><p class="text-gray-500 text-sm">班级总数</p><p class="text-2xl font-bold text-sky-600 mt-1">${cls.classes.length}</p></div>
+      <div class="bg-white rounded-xl p-4 shadow-sm"><p class="text-gray-500 text-sm">学生总数</p><p class="text-2xl font-bold text-emerald-600 mt-1">${students}</p></div>
+      <div class="bg-white rounded-xl p-4 shadow-sm"><p class="text-gray-500 text-sm">题目总数</p><p class="text-2xl font-bold text-amber-600 mt-1">${qs.questions.length}</p></div>
+      <div class="bg-white rounded-xl p-4 shadow-sm"><p class="text-gray-500 text-sm">作业总数</p><p class="text-2xl font-bold text-pink-600 mt-1">${as.assignments.length}</p></div>`;
+    $('#t-dash-assignments').innerHTML = as.assignments.slice(0, 5).map(a => `
+      <div class="flex items-center justify-between py-2 border-b border-gray-100">
+        <div>
+          <span class="font-medium">${esc(a.title)}</span>
+          <span class="text-xs ml-2 px-1.5 py-0.5 rounded ${a.mode === 'battle' ? 'bg-purple-50 text-purple-600' : 'bg-sky-50 text-sky-600'}">${a.mode === 'battle' ? '⚔️ 对战' : '📝 传统'}</span>
+          ${a.published ? '<span class="text-xs text-emerald-500 ml-1">已发布</span>' : '<span class="text-xs text-gray-400 ml-1">草稿</span>'}
+        </div>
+        <span class="text-xs text-gray-400">${a.submissionCount}/${a.questionCount}题 · 截止 ${fmtDT(a.deadline)}</span>
+      </div>`).join('') || '<p class="text-sm text-gray-400">还没有作业，去布置一个吧！</p>';
+    loadDashMsgs(ns);
+  } catch (e) { toast(e.message, false); }
+}
+function loadDashMsgs(ns) {
+  const box = $('#t-dash-msgs');
+  if (!box) return;
+  if (!ns) { api('/api/notifications').then(r => renderMsgs(r.notifications, box)).catch(() => {}); return; }
+  renderMsgs(ns.notifications, box);
+}
+function renderMsgs(list, box) {
+  box.innerHTML = list.slice(0, 8).map(n => `
+    <div class="py-2 border-b border-gray-100 text-sm">
+      <p>${esc(n.content)}</p>
+      <p class="text-xs text-gray-400 mt-1">${fmtFull(n.created_at)}</p>
+    </div>`).join('') || '<p class="text-sm text-gray-400">暂无消息</p>';
+}
+async function loadClasses() {
+  try {
+    const r = await api('/api/classes');
+    $('#t-classes-list').innerHTML = r.classes.length ? `
+      <table class="w-full text-sm">
+        <thead><tr class="text-left text-gray-500 border-b"><th class="pb-2">班级名称</th><th class="pb-2">年级</th><th class="pb-2">班级码</th><th class="pb-2">人数</th><th class="pb-2">操作</th></tr></thead>
+        <tbody>${r.classes.map(c => `
+          <tr class="border-b">
+            <td class="py-3 font-medium">${esc(c.name)}</td>
+            <td class="py-3 text-gray-500">${esc(c.grade)}</td>
+            <td><span class="bg-sky-50 text-sky-700 px-2 py-1 rounded font-mono text-xs tracking-widest">${esc(c.code)}</span>
+                <button onclick="copyText('${esc(c.code)}')" class="text-xs text-gray-400 hover:text-sky-600 ml-1">复制</button></td>
+            <td>${c.student_count}人</td>
+            <td><button onclick="deleteClass(${c.id})" class="text-red-400 hover:text-red-600 text-xs">删除</button></td>
+          </tr>`).join('')}</tbody>
+      </table>` : '<p class="text-center text-gray-400 py-8">还没有班级，点击右上角创建班级吧</p>';
+  } catch (e) { toast(e.message, false); }
+}
+function openAddClass() {
+  openModal(`<h3 class="font-bold text-lg mb-4">创建班级</h3>
+    <label class="block text-sm font-medium text-gray-700 mb-1">班级名称</label>
+    <input id="nc-name" placeholder="如：四年级1班" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 outline-none focus:ring-2 focus:ring-sky-400">
+    <label class="block text-sm font-medium text-gray-700 mb-1">年级（用于年级内比较）</label>
+    <input id="nc-grade" placeholder="如：四年级" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-5 outline-none focus:ring-2 focus:ring-sky-400">
+    <button onclick="createClass()" class="w-full bg-sky-500 text-white py-3 rounded-lg font-medium hover:bg-sky-600 transition">创建</button>`);
+}
+async function createClass() {
+  try {
+    const r = await api('/api/classes', { method: 'POST', body: { name: $('#nc-name').value.trim(), grade: $('#nc-grade').value.trim() } });
+    closeModal();
+    toast(`班级创建成功！班级码：${r.cls.code}`);
+    loadClasses();
+  } catch (e) { toast(e.message, false); }
+}
+async function deleteClass(id) {
+  if (!confirm('删除班级后该班学生将无法登录，确定删除吗？')) return;
+  try { await api('/api/classes/' + id, { method: 'DELETE' }); toast('班级已删除'); loadClasses(); } catch (e) { toast(e.message, false); }
+}
+function copyText(t) { navigator.clipboard?.writeText(t); toast('已复制班级码：' + t); }
+function openModal(html) { $('#modal-box').innerHTML = html; $('#modal-backdrop').classList.remove('hidden'); }
+function closeModal() { $('#modal-backdrop').classList.add('hidden'); }
+
+/* 题库 */
+async function loadQuestions() {
+  try {
+    const r = await api('/api/questions');
+    $('#t-questions-list').innerHTML = r.questions.length ? r.questions.map(q => `
+      <div class="border border-gray-100 rounded-xl p-4 hover:border-sky-200 transition">
+        <div class="flex justify-between items-start gap-2">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs px-2 py-0.5 rounded ${q.type === 'short' ? 'bg-amber-50 text-amber-600' : 'bg-sky-50 text-sky-600'}">${TYPE_ICON[q.type]} ${TYPE_NAME[q.type]}</span>
+            </div>
+            <p class="font-medium">${esc(q.content)}</p>
+            ${q.type === 'choice' ? `<p class="text-xs text-gray-500 mt-1">${q.options.map((o, i) => String.fromCharCode(65 + i) + '. ' + esc(o)).join('　')}</p>` : ''}
+            <p class="text-xs text-emerald-600 mt-1">答案：${q.type === 'short' ? '（老师批改）' : q.type === 'choice' ? String.fromCharCode(65 + Number(q.answer)) : esc(q.answer)}</p>
+          </div>
+          <button onclick="deleteQuestion(${q.id})" class="text-gray-300 hover:text-red-500 text-sm">🗑</button>
+        </div>
+      </div>`).join('') : '<div class="text-center text-gray-400 py-10"><p class="text-4xl mb-2">📝</p><p>题库空空如也，点击「新建题目」或「一键导入示例题」开始吧！</p></div>';
+  } catch (e) { toast(e.message, false); }
+}
+let qtype = 'choice';
+function openCreateQuestion() {
+  qtype = 'choice';
+  qansSel = null;
+  openModal(`
+    <h3 class="font-bold text-lg mb-4">新建题目</h3>
+    <div class="flex gap-2 mb-3">${['choice', 'fill', 'judge', 'short'].map(t => `
+      <button onclick="qtype='${t}';renderQForm()" id="qtype-${t}" class="px-3 py-1.5 rounded-lg text-sm ${t === 'choice' ? 'bg-sky-500 text-white' : 'bg-gray-100 text-gray-600'}">${TYPE_ICON[t]} ${TYPE_NAME[t]}</button>`).join('')}</div>
+    <div id="q-form"></div>`);
+  renderQForm();
+}
+function renderQForm() {
+  ['choice', 'fill', 'judge', 'short'].forEach(t => $('#qtype-' + t).className = 'px-3 py-1.5 rounded-lg text-sm ' + (t === qtype ? 'bg-sky-500 text-white' : 'bg-gray-100 text-gray-600'));
+  let extra = '';
+  if (qtype === 'choice') extra = `
+    <label class="block text-sm font-medium text-gray-700 mb-1">选项（2-4个）</label>
+    <div id="q-options">${['', ''].map((_, i) => `<div class="flex gap-2 mb-2"><span class="text-gray-400 pt-2">${String.fromCharCode(65 + i)}</span><input class="flex-1 px-3 py-2 border border-gray-300 rounded-lg outline-none" placeholder="选项内容" value=""><button onclick="this.parentElement.remove()" class="text-gray-300 hover:text-red-500">✕</button></div>`).join('')}</div>
+    <button onclick="addOption()" class="text-sm text-sky-600 hover:underline mb-3">+ 添加选项</button>
+    <label class="block text-sm font-medium text-gray-700 mb-1">正确答案（点击选项字母选择）</label>
+    <div id="q-answer" class="flex gap-2 mb-5"></div>`;
+  if (qtype === 'judge') extra = `
+    <label class="block text-sm font-medium text-gray-700 mb-1">正确答案</label>
+    <div class="flex gap-2 mb-5">
+      <button onclick="qjudge='0';renderQForm()" id="j0" class="px-4 py-2 rounded-lg ${qjudge === '0' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'}">正确</button>
+      <button onclick="qjudge='1';renderQForm()" id="j1" class="px-4 py-2 rounded-lg ${qjudge === '1' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'}">错误</button>
+    </div>`;
+  if (qtype === 'fill') extra = `
+    <label class="block text-sm font-medium text-gray-700 mb-1">正确答案</label>
+    <input id="q-fill-ans" placeholder="正确答案" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-2 outline-none">
+    <p class="text-xs text-gray-400 mb-5">💡 系统会自动忽略学生答案的前后空格进行匹配</p>`;
+  if (qtype === 'short') extra = `<p class="text-xs text-gray-400 mb-5">💡 简答题由老师手动批改，打等第（A+/A…）并写评语</p>`;
+  $('#q-form').innerHTML = `
+    <label class="block text-sm font-medium text-gray-700 mb-1">题目内容</label>
+    <textarea id="q-content" rows="3" placeholder="请输入题目内容..." class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 outline-none focus:ring-2 focus:ring-sky-400"></textarea>
+    ${extra}
+    <button onclick="createQuestion()" class="w-full bg-gradient-to-r from-sky-500 to-emerald-500 text-white py-3 rounded-lg font-medium">保存题目</button>`;
+  if (qtype === 'choice') renderQAnswer();
+}
+let qjudge = '0', qansSel = null;
+function addOption() {
+  const i = $('#q-options').children.length;
+  if (i >= 4) return;
+  const d = document.createElement('div');
+  d.className = 'flex gap-2 mb-2';
+  d.innerHTML = `<span class="text-gray-400 pt-2">${String.fromCharCode(65 + i)}</span><input class="flex-1 px-3 py-2 border border-gray-300 rounded-lg outline-none" placeholder="选项内容"><button onclick="this.parentElement.remove();renderQAnswer()" class="text-gray-300 hover:text-red-500">✕</button>`;
+  $('#q-options').appendChild(d);
+  renderQAnswer();
+}
+function renderQAnswer() {
+  $('#q-answer').innerHTML = $$('#q-options input').map((inp, i) =>
+    `<button onclick="qansSel=${i};renderQAnswer()" class="px-4 py-2 rounded-lg border ${qansSel === i ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-gray-200 text-gray-600'}">${String.fromCharCode(65 + i)}</button>`).join('');
+}
+async function createQuestion() {
+  try {
+    const content = $('#q-content').value.trim();
+    if (!content) return toast('请输入题目内容', false);
+    let body = { type: qtype, content };
+    if (qtype === 'choice') {
+      const opts = $$('#q-options input').map(i => i.value.trim());
+      if (opts.some(o => !o)) return toast('请填写所有选项', false);
+      if (qansSel === null) return toast('请选择正确答案', false);
+      body.options = opts; body.answer = String(qansSel);
+    } else if (qtype === 'judge') body.answer = qjudge;
+    else if (qtype === 'fill') { body.answer = $('#q-fill-ans').value.trim(); if (!body.answer) return toast('请输入正确答案', false); }
+    else body.answer = '';
+    await api('/api/questions', { method: 'POST', body });
+    closeModal(); toast('题目创建成功！'); loadQuestions();
+  } catch (e) { toast(e.message, false); }
+}
+async function deleteQuestion(id) {
+  if (!confirm('确定删除这道题目吗？')) return;
+  try { await api('/api/questions/' + id, { method: 'DELETE' }); toast('题目已删除'); loadQuestions(); } catch (e) { toast(e.message, false); }
+}
+async function importSamples() {
+  try { await api('/api/questions/samples', { method: 'POST' }); toast('已导入 6 道示例题！'); loadQuestions(); } catch (e) { toast(e.message, false); }
+}
+
+/* 作业管理 */
+async function loadAssignments() {
+  try {
+    const r = await api('/api/assignments');
+    $('#t-assignments-list').innerHTML = r.assignments.length ? r.assignments.map(a => `
+      <div class="border border-gray-100 rounded-xl p-4 hover:border-sky-200 transition">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div class="flex-1 min-w-48">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-bold">${esc(a.title)}</span>
+              <span class="text-xs px-1.5 py-0.5 rounded ${a.mode === 'battle' ? 'bg-purple-50 text-purple-600' : 'bg-sky-50 text-sky-600'}">${a.mode === 'battle' ? '⚔️ 对战模式' : '📝 传统模式'}</span>
+              ${a.published ? '<span class="text-xs bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded">已发布</span>' : '<span class="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">草稿</span>'}
+            </div>
+            <p class="text-xs text-gray-400 mt-1">${a.classes.map(c => esc(c.name)).join('、') || '全部班级'} · ${a.questionCount} 道题 · 截止 ${fmtFull(a.deadline)}</p>
+            ${a.description ? `<p class="text-sm text-gray-500 mt-1">${esc(a.description)}</p>` : ''}
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs text-gray-500">已交 ${a.submissionCount}</span>
+            <button onclick="openAssignmentDetail(${a.id})" class="text-sm bg-sky-50 text-sky-600 px-3 py-1.5 rounded-lg hover:bg-sky-100 transition">查看详情</button>
+            ${a.published
+              ? `<button onclick="togglePublish(${a.id}, false)" class="text-sm border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50">取消发布</button>`
+              : `<button onclick="togglePublish(${a.id}, true)" class="text-sm bg-emerald-500 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-600 transition">发布</button>`}
+            <button onclick="deleteAssignment(${a.id})" class="text-gray-300 hover:text-red-500">🗑</button>
+          </div>
+        </div>
+      </div>`).join('') : '<div class="text-center text-gray-400 py-10"><p class="text-4xl mb-2">📋</p><p>还没有作业，点击「布置作业」开始吧！</p></div>';
+  } catch (e) { toast(e.message, false); }
+}
+async function openCreateAssignment() {
+  try {
+    const [cls, qs] = await Promise.all([api('/api/classes'), api('/api/questions')]);
+    if (!cls.classes.length) return toast('请先在「班级管理」中创建班级', false);
+    if (!qs.questions.length) return toast('题库为空，请先在「题库」中创建题目', false);
+    S.qa = { cls: cls.classes, qs: qs.questions, mode: 'normal', picked: {} };
+    const local = new Date(Date.now() + 86400000);
+    local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
+    S.qa.defaultDL = local.toISOString().slice(0, 16);
+    openModal(`
+      <h3 class="font-bold text-lg mb-4">布置作业</h3>
+      <label class="block text-sm font-medium text-gray-700 mb-1">作业标题</label>
+      <input id="qa-title" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 outline-none focus:ring-2 focus:ring-sky-400">
+      <label class="block text-sm font-medium text-gray-700 mb-1">作业描述（可选）</label>
+      <input id="qa-desc" placeholder="给学生说点什么..." class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 outline-none focus:ring-2 focus:ring-sky-400">
+      <label class="block text-sm font-medium text-gray-700 mb-2">作业形式</label>
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <button onclick="qaMode('normal')" id="qa-mode-normal" class="border-2 border-sky-400 bg-sky-50 rounded-xl p-3 text-left">
+          <div class="font-bold">📝 传统模式</div>
+          <div class="text-xs text-gray-500 mt-1">选择题 / 填空题 / 判断题 / 简答题</div>
+        </button>
+        <button onclick="qaMode('battle')" id="qa-mode-battle" class="border-2 border-gray-200 rounded-xl p-3 text-left">
+          <div class="font-bold">⚔️ 对战模式</div>
+          <div class="text-xs text-gray-500 mt-1">与在线同学每题实时比拼，速度快且正确者得分更高</div>
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">截止时间</label>
+          <input id="qa-deadline" type="datetime-local" value="${S.qa.defaultDL}" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-sky-400">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">布置给</label>
+          <div id="qa-classes" class="max-h-28 overflow-y-auto border border-gray-300 rounded-lg p-2">
+            ${S.qa.cls.map(c => `<label class="flex items-center gap-2 py-1 text-sm"><input type="checkbox" value="${c.id}" checked>${esc(c.name)}</label>`).join('')}
+          </div>
+        </div>
+      </div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">选择题目</label>
+      <div id="qa-pick" class="max-h-64 overflow-y-auto border border-gray-300 rounded-lg p-2 space-y-1"></div>
+      <button onclick="submitCreateAssignment()" class="w-full bg-gradient-to-r from-sky-500 to-emerald-500 text-white py-3 rounded-lg font-medium mt-4">创建作业</button>`);
+    renderQAPick();
+  } catch (e) { toast(e.message, false); }
+}
+function qaMode(m) {
+  S.qa.mode = m;
+  $('#qa-mode-normal').className = 'border-2 ' + (m === 'normal' ? 'border-sky-400 bg-sky-50' : 'border-gray-200') + ' rounded-xl p-3 text-left';
+  $('#qa-mode-battle').className = 'border-2 ' + (m === 'battle' ? 'border-purple-400 bg-purple-50' : 'border-gray-200') + ' rounded-xl p-3 text-left';
+  renderQAPick();
+}
+function renderQAPick() {
+  const battle = S.qa.mode === 'battle';
+  $('#qa-pick').innerHTML = S.qa.qs.filter(q => !battle || q.type !== 'short').map(q => {
+    const on = S.qa.picked[q.id];
+    return `<div class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 ${on ? 'bg-sky-50' : ''}">
+      <input type="checkbox" ${on ? 'checked' : ''} onchange="togglePick(this, ${q.id})">
+      <span class="text-xs px-1.5 py-0.5 rounded bg-gray-100">${TYPE_ICON[q.type]}${TYPE_NAME[q.type]}</span>
+      <span class="text-sm flex-1 truncate">${esc(q.content)}</span>
+      ${on ? `<input type="number" value="${S.qa.picked[q.id].points}" min="1" max="100" class="w-16 px-2 py-1 border border-gray-300 rounded text-sm" onchange="S.qa.picked[${q.id}].points=Number(this.value)||10">分` : ''}
+    </div>`;
+  }).join('') || '<p class="text-sm text-gray-400 p-3">没有可用的题目（对战模式仅支持选择/填空/判断题）</p>';
+  if (battle) $('#qa-pick').insertAdjacentHTML('afterbegin', '<p class="text-xs text-purple-500 p-1">⚔️ 对战模式使用客观题：学生两两实时比拼每道题的速度与正确率</p>');
+}
+/* 勾选/取消题目，就地更新不重绘整个列表 */
+function togglePick(cb, qid) {
+  if (cb.checked) S.qa.picked[qid] = { points: 10 };
+  else delete S.qa.picked[qid];
+  const row = cb.closest('div');
+  row.classList.toggle('bg-sky-50', cb.checked);
+  let pts = row.querySelector('input[type=number]');
+  if (cb.checked && !pts) {
+    pts = document.createElement('input');
+    pts.type = 'number'; pts.value = 10; pts.min = 1; pts.max = 100;
+    pts.className = 'w-16 px-2 py-1 border border-gray-300 rounded text-sm';
+    pts.onchange = () => { S.qa.picked[qid].points = Number(pts.value) || 10; };
+    row.appendChild(pts);
+  } else if (!cb.checked && pts) pts.remove();
+}
+async function submitCreateAssignment() {
+  try {
+    const title = $('#qa-title').value.trim();
+    if (!title) return toast('请输入作业标题', false);
+    const question_ids = Object.entries(S.qa.picked).map(([id, v]) => ({ id: Number(id), points: v.points }));
+    if (!question_ids.length) return toast('请至少选择一道题目', false);
+    const deadline = $('#qa-deadline').value;
+    if (!deadline || new Date(deadline).getTime() <= Date.now()) return toast('截止时间必须晚于现在', false);
+    const class_ids = $$('#qa-classes input:checked').map(i => Number(i.value));
+    await api('/api/assignments', { method: 'POST', body: { title, description: $('#qa-desc').value.trim(), mode: S.qa.mode, deadline: new Date(deadline).toISOString(), class_ids, question_ids } });
+    closeModal(); toast('作业创建成功！记得发布给学生哦'); loadAssignments();
+  } catch (e) { toast(e.message, false); }
+}
+async function togglePublish(id, pub) {
+  try {
+    await api(`/api/assignments/${id}/${pub ? 'publish' : 'unpublish'}`, { method: 'POST' });
+    toast(pub ? '作业已发布！学生已收到通知' : '已取消发布');
+    loadAssignments();
+  } catch (e) { toast(e.message, false); }
+}
+async function deleteAssignment(id) {
+  if (!confirm('删除后作业将无法恢复，学生也将无法查看，确定删除吗？')) return;
+  try { await api('/api/assignments/' + id, { method: 'DELETE' }); toast('作业已删除'); loadAssignments(); } catch (e) { toast(e.message, false); }
+}
+
+/* 作业详情（教师） */
+let TAdetail = null;
+async function openAssignmentDetail(id) {
+  TAdetail = { id };
+  tNav('adetail');
+  adetailTab('subs');
+  loadADetail();
+}
+async function loadADetail() {
+  try {
+    const r = await api('/api/submissions/assignment/' + TAdetail.id);
+    TAdetail.data = r;
+    $('#t-adetail-head').innerHTML = `
+      <div class="bg-white rounded-2xl p-6 shadow-sm mb-4">
+        <div class="flex items-center gap-2 flex-wrap">
+          <h3 class="text-xl font-bold">${esc(r.assignment.title)}</h3>
+          <span class="text-xs px-1.5 py-0.5 rounded ${r.assignment.mode === 'battle' ? 'bg-purple-50 text-purple-600' : 'bg-sky-50 text-sky-600'}">${r.assignment.mode === 'battle' ? '⚔️ 对战模式' : '📝 传统模式'}</span>
+        </div>
+        <p class="text-sm text-gray-500 mt-1">${r.questions.length} 道题 · 截止 ${fmtFull(r.assignment.deadline)} · 已交 ${r.submissions.length} 份</p>
+        ${r.assignment.description ? `<p class="text-sm text-gray-500 mt-1">${esc(r.assignment.description)}</p>` : ''}
+      </div>`;
+    renderSubmissions(r);
+    renderStats(r);
+  } catch (e) { toast(e.message, false); }
+}
+function adetailTab(tab) {
+  $('#adetail-tab-subs').className = 'px-4 py-2 rounded-lg text-sm font-medium ' + (tab === 'subs' ? 'bg-sky-500 text-white' : 'bg-gray-100 text-gray-600');
+  $('#adetail-tab-stats').className = 'px-4 py-2 rounded-lg text-sm font-medium ' + (tab === 'stats' ? 'bg-sky-500 text-white' : 'bg-gray-100 text-gray-600');
+  $('#adetail-subs').classList.toggle('hidden', tab !== 'subs');
+  $('#adetail-stats').classList.toggle('hidden', tab !== 'stats');
+}
+function renderSubmissions(r) {
+  $('#adetail-subs').innerHTML = r.submissions.length ? `
+    <div class="bg-white rounded-2xl p-6 shadow-sm">
+      <div class="space-y-4">${r.submissions.map((s, i) => `
+        <div class="border border-gray-100 rounded-xl p-4">
+          <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+            <div class="flex items-center gap-2">
+              <span class="font-medium">${esc(s.student_name)}</span>
+              <span class="text-xs text-gray-400">${esc(s.class_name || '')}</span>
+              <span class="text-xs text-gray-400">${fmtFull(s.submitted_at)}</span>
+              ${s.rank ? `<span class="text-xs px-1.5 py-0.5 rounded ${s.rank === 1 ? 'bg-amber-100 text-amber-700' : s.rank === 2 ? 'bg-gray-200 text-gray-600' : 'bg-orange-100 text-orange-700'}">第${s.rank}名 +${s.rank_bonus}分</span>` : ''}
+              ${s.battle_opponent ? `<span class="text-xs px-1.5 py-0.5 rounded bg-purple-50 text-purple-600">⚔️ vs ${esc(s.battle_opponent)}</span>` : ''}
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold ${s.score >= s.objective_score ? 'text-emerald-600' : ''}">${s.score} 分</span>
+              ${s.grade ? `<span class="text-white text-xs font-bold px-2 py-1 rounded ${GRADE_STYLE[s.grade] || 'bg-gray-400'}">${esc(s.grade)}</span>` : s.graded === 0 ? '<span class="text-xs px-2 py-1 rounded bg-amber-50 text-amber-600">待批改</span>' : ''}
+              <button onclick="openGradeModal(${s.id}, ${s.student_id})" class="text-sm bg-sky-50 text-sky-600 px-3 py-1.5 rounded-lg hover:bg-sky-100 transition">${s.grade ? '修改批改' : '批改作业'}</button>
+            </div>
+          </div>
+          ${s.comment ? `<p class="text-sm bg-amber-50 rounded-lg px-3 py-2 mt-2">💬 ${esc(s.comment)}</p>` : ''}
+          <details class="mt-2"><summary class="text-xs text-gray-400 cursor-pointer hover:text-sky-600">查看答题详情</summary>
+            <div class="mt-2 space-y-2">${s.answers.map((a, j) => {
+              const q = r.questions.find(x => x.id === a.qid);
+              if (!q) return '';
+              const okText = a.correct === null ? '<span class="text-xs px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">简答题</span>'
+                : a.correct ? '<span class="text-xs px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600">✔ 正确</span>'
+                : '<span class="text-xs px-1.5 py-0.5 rounded bg-red-50 text-red-600">✘ 错误</span>';
+              return `<div class="bg-gray-50 rounded-lg p-3 text-sm">
+                <p class="font-medium">${j + 1}. ${esc(q.content)} ${okText}</p>
+                <p class="text-gray-500 mt-1">学生答案：${esc(a.answer || '（未作答）')}</p>
+                <p class="text-emerald-600">正确答案：${q.type === 'choice' ? String.fromCharCode(65 + Number(q.answer)) : esc(q.answer) || '（老师批改）'}</p>
+              </div>`;
+            }).join('')}</div>
+          </details>
+        </div>`).join('')}</div>
+    </div>` : '<div class="bg-white rounded-2xl p-10 text-center text-gray-400 shadow-sm">📭 暂无学生提交，学生提交后会显示在这里</div>';
+}
+function openGradeModal(subId) {
+  const s = TAdetail.data.submissions.find(x => x.id === subId);
+  if (!s) return;
+  openModal(`
+    <h3 class="font-bold text-lg mb-1">批改作业</h3>
+    <p class="text-sm text-gray-500 mb-4">${esc(s.student_name)} · ${s.battle_score ? '⚔️ 对战得分 ' + s.battle_score : '客观题得分 ' + s.objective_score + ' 分'}</p>
+    ${s.answers.some(a => a.correct === null) ? `<div class="bg-gray-50 rounded-xl p-3 mb-4 max-h-40 overflow-y-auto">${s.answers.filter(a => a.correct === null).map(a => {
+      const q = TAdetail.data.questions.find(x => x.id === a.qid);
+      return `<p class="text-sm mb-2"><span class="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded mr-1">简答题</span>${esc(q?.content || '')}</p><p class="text-sm text-gray-600 ml-1 mb-3">📝 ${esc(a.answer || '（未作答）')}</p>`;
+    }).join('')}</div>` : '<p class="text-sm text-emerald-600 mb-3">✔ 全为客观题，系统已自动判分，可补充等第与评语</p>'}
+    <label class="block text-sm font-medium text-gray-700 mb-2">评分等第</label>
+    <div class="grid grid-cols-6 gap-2 mb-4" id="grade-pick">${['A+', 'A', 'B+', 'B', 'C', 'D'].map(g => `
+      <button onclick="pickGrade('${g}')" data-g="${g}" class="py-2 rounded-lg text-white font-bold text-sm ${GRADE_STYLE[g]} ${s.grade === g ? 'ring-2 ring-offset-2 ring-sky-400' : 'opacity-60 hover:opacity-100'}">${g}</button>`).join('')}</div>
+    <label class="block text-sm font-medium text-gray-700 mb-1">评语（类似 QQ 批改作业）</label>
+    <textarea id="grade-comment" rows="3" placeholder="写点鼓励或建议吧，如：书写工整，思路清晰，继续加油！" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 outline-none focus:ring-2 focus:ring-sky-400">${esc(s.comment || '')}</textarea>
+    <button onclick="submitGrade(${subId}, '${s.grade || ''}')" class="w-full bg-gradient-to-r from-sky-500 to-emerald-500 text-white py-3 rounded-lg font-medium">保存批改</button>`);
+}
+let gradeSel = '';
+function pickGrade(g) { gradeSel = g; $$('#grade-pick [data-g]').forEach(b => { b.classList.toggle('opacity-60', b.dataset.g !== g); b.classList.toggle('ring-2', b.dataset.g === g); b.classList.toggle('ring-offset-2', b.dataset.g === g); b.classList.toggle('ring-sky-400', b.dataset.g === g); }); }
+async function submitGrade(subId, cur) {
+  const g = gradeSel || cur;
+  if (!g) return toast('请选择一个等第', false);
+  try {
+    const comment = $('#grade-comment').value.trim();
+    await api(`/api/submissions/${subId}/grade`, { method: 'POST', body: { grade: g, comment } });
+    closeModal(); toast('批改已保存，学生将收到通知');
+    loadADetail();
+  } catch (e) { toast(e.message, false); }
+}
+async function renderStats(r, scope) {
+  try {
+    const st = await api(`/api/stats/assignment/${TAdetail.id}?scope=${scope || 'mine'}`);
+    const box = $('#adetail-stats');
+    box.innerHTML = `
+      <div class="flex gap-2 mb-4">
+        <button onclick="renderStats(null, 'mine')" class="px-4 py-2 rounded-lg text-sm ${(scope || 'mine') === 'mine' ? 'bg-sky-500 text-white' : 'bg-gray-100 text-gray-600'}">📊 我的班级平行比较</button>
+        <button onclick="renderStats(null, 'grade')" class="px-4 py-2 rounded-lg text-sm ${scope === 'grade' ? 'bg-sky-500 text-white' : 'bg-gray-100 text-gray-600'}">🏫 年级内比较</button>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-sm mb-4">
+        <div class="flex justify-between items-center mb-3"><h4 class="font-bold">班级完成情况</h4>
+          <span class="text-sm text-gray-500">总完成率 <b class="text-sky-600">${st.totalRate}%</b> · 平均分 <b class="text-emerald-600">${st.avgScore}</b></span></div>
+        <div class="space-y-4">${st.perClass.map(c => `
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="font-medium">${esc(c.class.name)} <span class="text-xs text-gray-400">（${esc(c.class.grade)}${c.class.teacher_id === S.user.id ? '' : ' · 其他老师班级'}）</span></span>
+              <span class="text-gray-500">${c.submitted}/${c.total} 人 · ${c.rate}% · 平均 ${c.avgScore} 分</span>
+            </div>
+            <div class="w-full h-3 bg-gray-100 rounded-full"><div class="bar h-3 bg-gradient-to-r from-sky-400 to-emerald-400 rounded-full" style="width:${c.rate}%"></div></div>
+          </div>`).join('') || '<p class="text-sm text-gray-400">暂无班级数据</p>'}</div>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-sm">
+        <h4 class="font-bold mb-3">每道题正确率</h4>
+        <div class="space-y-3">${st.perQuestion.map((q, i) => `
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="truncate flex-1 mr-2">${i + 1}. ${esc(q.content)}</span>
+              <span class="${q.accuracy === null ? 'text-gray-400' : q.accuracy >= 70 ? 'text-emerald-600' : q.accuracy >= 40 ? 'text-amber-600' : 'text-red-600'} font-medium">${q.accuracy === null ? '简答题' : q.accuracy + '%（' + q.answered + '人答）'}</span>
+            </div>
+            <div class="w-full h-2.5 bg-gray-100 rounded-full"><div class="bar h-2.5 rounded-full ${q.accuracy === null ? 'bg-gray-300' : q.accuracy >= 70 ? 'bg-emerald-400' : q.accuracy >= 40 ? 'bg-amber-400' : 'bg-red-400'}" style="width:${q.accuracy || 0}%"></div></div>
+          </div>`).join('')}</div>
+      </div>`;
+  } catch (e) { toast(e.message, false); }
+}
+
+/* 消息 */
+async function loadNotifications() {
+  try {
+    const r = await api('/api/notifications');
+    const badge = $('#t-unread-badge');
+    if (r.unread > 0) { badge.classList.remove('hidden'); badge.textContent = r.unread; } else badge.classList.add('hidden');
+    $('#t-msgs-list').innerHTML = r.notifications.length ? r.notifications.map(n => `
+      <div class="border border-gray-100 rounded-xl p-4 ${n.read ? '' : 'bg-sky-50/50'}">
+        <p class="text-sm">${esc(n.content)}</p>
+        <p class="text-xs text-gray-400 mt-1">${fmtFull(n.created_at)}</p>
+      </div>`).join('') : '<p class="text-center text-gray-400 py-10">暂无消息，学生交作业或使用延时铃时会通知你</p>';
+    api('/api/notifications/read', { method: 'POST' }).catch(() => {});
+  } catch (e) { toast(e.message, false); }
+}
+
+/* ================= 学生端 ================= */
+function sNav(sec) {
+  $$('.s-sec').forEach(el => el.classList.add('hidden'));
+  $('#s-' + sec).classList.remove('hidden');
+  $$('#view-student [data-nav]').forEach(b => b.classList.toggle('active', b.dataset.nav === sec));
+  window.scrollTo(0, 0);
+  if (sec === 'home') loadStudentHome();
+  if (sec === 'assignment') loadAssignmentList();
+  if (sec === 'rank') loadRank();
+  if (sec === 'shop') loadShop();
+  if (sec === 'pet') loadPet();
+  if (sec === 'practice') loadPractice();
+}
+async function refreshCredits() {
+  try { const r = await api('/api/auth/me'); S.user = r.user; $('#s-credits').textContent = r.user.credits; } catch {}
+}
+async function loadStudentHome() {
+  try {
+    refreshCredits();
+    const [pet, as, lb] = await Promise.all([api('/api/pet/mine'), api('/api/assignments'), api('/api/leaderboard?scope=mine')]);
+    S.lb = lb.leaderboard;
+    renderPetCard(pet);
+    const box = $('#s-home-assignments');
+    box.innerHTML = as.assignments.length ? as.assignments.slice(0, 5).map(a => assignmentRow(a)).join('')
+      : '<p class="text-sm text-gray-400">老师还没有布置作业，耐心等待一下吧！先去自由练习赚学分～</p>';
+    const top3 = lb.leaderboard.slice(0, 3);
+    $('#s-home-lb').innerHTML = top3.map(x => `
+      <div class="flex items-center gap-3 py-1.5">
+        <span class="text-xl">${x.icon || ''}</span>
+        <span class="font-medium flex-1">${esc(x.name)}${x.title ? '<span class="text-xs text-amber-500 ml-1">' + esc(x.title) + '</span>' : ''}</span>
+        <span class="font-bold text-amber-600">${x.credits} 分</span>
+      </div>`).join('') || '<p class="text-sm text-gray-400">暂无数据</p>';
+  } catch (e) { toast(e.message, false); }
+}
+function renderPetCard(p) {
+  const pet = p.pet;
+  const dead = !pet.alive;
+  const hungerColor = pet.hunger > 50 ? 'bg-emerald-400' : pet.hunger > 20 ? 'bg-amber-400' : 'bg-red-500';
+  const happyColor = pet.happiness > 50 ? 'bg-emerald-400' : pet.happiness > 20 ? 'bg-amber-400' : 'bg-red-500';
+  $('#s-pet-card').innerHTML = `
+    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+      <div>
+        <h2 class="text-xl font-bold">我的宠物：${esc(pet.name)}${pet.hat ? pet.hat : ''}${pet.acc ? pet.acc : ''}</h2>
+        <p class="text-gray-500 text-sm">${esc(pet.speciesName)} · ${esc(pet.stageName)} · Lv.${pet.level}${pet.level >= 10 ? '（传说形态）' : ''}</p>
+        <div class="w-48 h-2 bg-gray-200 rounded-full mt-2"><div class="h-2 bg-gradient-to-r from-emerald-400 to-sky-400 rounded-full" style="width:${pet.level >= 10 ? 100 : Math.round(pet.exp / pet.nextExp * 100)}%"></div></div>
+        <p class="text-xs text-gray-400 mt-1">成长经验 ${pet.exp}/${pet.level >= 10 ? 'MAX' : pet.nextExp}</p>
+      </div>
+      <div class="text-right">
+        <div class="mb-1"><span class="text-xs text-gray-500">🍖 饥饿值 </span><span class="text-sm font-medium">${Math.round(pet.hunger)}</span></div>
+        <div class="w-32 h-2 bg-gray-200 rounded-full ml-auto"><div class="bar h-2 ${hungerColor} rounded-full" style="width:${Math.min(100, pet.hunger)}%"></div></div>
+        <div class="mt-2 mb-1"><span class="text-xs text-gray-500">😊 愉悦值 </span><span class="text-sm font-medium">${Math.round(pet.happiness)}</span></div>
+        <div class="w-32 h-2 bg-gray-200 rounded-full ml-auto"><div class="bar h-2 ${happyColor} rounded-full" style="width:${Math.min(100, pet.happiness)}%"></div></div>
+      </div>
+    </div>
+    <div class="flex justify-center py-4 relative">
+      <div class="text-8xl ${dead ? 'grayscale opacity-60' : 'pet-bounce'}">${esc(pet.emoji)}${pet.hat ? esc(pet.hat) : ''}${pet.acc ? esc(pet.acc) : ''}</div>
+    </div>
+    <p class="text-center text-sm mb-2">
+      ${dead ? '<span class="text-red-500">😿 宠物因为太饿晕过去了…花 30 学分复活它吧</span>'
+        : `<span class="text-gray-500">${pet.hunger < 30 ? '肚子好饿，快去商店买食物喂我～' : pet.happiness < 30 ? '心情有点低落，陪我玩玩吧～' : '今天也要加油答题哦~'}</span>`}
+    </p>
+    <div class="text-center space-y-2">
+      <span class="inline-block text-xs px-2 py-1 rounded-full ${pet.growthRate > 1 ? 'bg-emerald-50 text-emerald-600' : pet.growthRate < 1 ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-500'}">
+        ${pet.growthRate > 1 ? '🚀 心情好，成长加速 ×1.5' : pet.growthRate < 1 ? '🐌 心情低落，成长变慢 ×0.5' : '🌱 正常成长中'}
+      </span>
+      ${dead ? `<div><button onclick="revivePet()" class="mt-2 bg-rose-500 hover:bg-rose-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">💖 花 30 学分复活</button></div>`
+        : `<div><button onclick="sNav('pet')" class="mt-2 bg-sky-500 hover:bg-sky-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition">🏡 去宠物家园</button></div>`}
+    </div>`;
+}
+function assignmentRow(a) {
+  const expired = a.deadline < Date.now();
+  const done = a.myScore !== null;
+  let statusBadge = expired ? '<span class="text-xs bg-red-50 text-red-500 px-1.5 py-0.5 rounded">已截止</span>'
+    : done ? '<span class="text-xs bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded">已提交</span>'
+    : '<span class="text-xs bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded">待完成</span>';
+  if (done && a.graded === 0) statusBadge = '<span class="text-xs bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded">待老师批改</span>';
+  const deadlineTxt = `<span class="text-xs ${!expired && !done && a.deadline - Date.now() < 3600000 ? 'text-red-500 font-bold' : 'text-gray-400'}" data-dl="${a.deadline}">⏰ ${countdown(a.deadline)}</span>`;
+  return `
+    <div class="border border-gray-100 rounded-xl p-3 hover:border-sky-200 transition">
+      <div class="flex items-center justify-between gap-2 flex-wrap">
+        <div class="flex-1 min-w-40">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-medium">${esc(a.title)}</span>
+            <span class="text-xs px-1.5 py-0.5 rounded ${a.mode === 'battle' ? 'bg-purple-50 text-purple-600' : 'bg-sky-50 text-sky-600'}">${a.mode === 'battle' ? '⚔️ 对战' : '📝 传统'}</span>
+            ${statusBadge}
+          </div>
+          <p class="text-xs text-gray-400 mt-1">${a.questionCount} 道题 · ${a.mode === 'battle' ? '与在线同学实时比拼' : '满分 ' + (a.questionCount * 10) + ' 分'}</p>
+          <div class="flex items-center gap-2 mt-1 flex-wrap">${deadlineTxt}${done && a.myGrade ? `<span class="text-white text-xs font-bold px-1.5 py-0.5 rounded ${GRADE_STYLE[a.myGrade] || 'bg-gray-400'}">${esc(a.myGrade)}</span>` : ''}${a.myRank ? `<span class="text-xs text-amber-600">🏅 第${a.myRank}名 +${a.myRankBonus}分</span>` : ''}</div>
+        </div>
+        <div class="flex items-center gap-2">
+          ${done ? `<span class="text-sm font-bold text-emerald-600">${a.myScore} 分</span>`
+            : expired ? '<span class="text-sm text-gray-400">无法作答</span>'
+            : `<button onclick="${a.mode === 'battle' ? `openBattle(${a.id})` : `openSAssignment(${a.id})`}" class="text-sm bg-gradient-to-r from-sky-500 to-emerald-500 text-white px-4 py-2 rounded-lg font-medium hover:opacity-90 transition">${a.mode === 'battle' ? '⚔️ 进入对战' : '开始答题'}</button>`}
+          ${!done && !expired ? `<button onclick="useDelayBell(${a.id})" title="用延时铃延长30分钟" class="text-xl hover:scale-110 transition">🔔</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+async function loadAssignmentList() {
+  try {
+    const r = await api('/api/assignments');
+    $('#s-assignment-list').innerHTML = r.assignments.length ? r.assignments.map(a => assignmentRow(a)).join('')
+      : '<div class="text-center text-gray-400 py-10"><p class="text-4xl mb-2">📋</p><p>老师还没有布置作业，耐心等待一下吧！</p><p class="text-sm mt-2">去自由练习赚学分：<button onclick="sNav(\'practice\')" class="text-sky-600 hover:underline">开始练习 →</button></p></div>';
+  } catch (e) { toast(e.message, false); }
+}
+/* 延时铃 */
+async function useDelayBell(id) {
+  if (!confirm('使用一个「延时铃」将本作业截止时间延长 30 分钟，老师会收到通知。确定使用吗？')) return;
+  try {
+    const r = await api(`/api/assignments/${id}/delay`, { method: 'POST' });
+    toast(r.message);
+    if (!$('#s-home').classList.contains('hidden')) loadStudentHome();
+    if (!$('#s-assignment').classList.contains('hidden')) loadAssignmentList();
+  } catch (e) { toast(e.message, false); }
+}
+
+/* 传统作业 */
+let SAid = null;
+async function openSAssignment(id) {
+  SAid = id;
+  try {
+    const r = await api('/api/assignments/' + id);
+    if (r.submitted) {
+      const s = r.mySubmission;
+      $('#s-adetail').classList.remove('hidden');
+      $$('.s-sec').forEach(el => { if (el.id !== 's-adetail') el.classList.add('hidden'); });
+      $('#s-adetail-box').innerHTML = `
+        <div class="bg-white rounded-2xl p-8 shadow-sm text-center">
+          <div class="text-5xl mb-3">${s.graded === 0 ? '⏳' : '🎉'}</div>
+          <h3 class="text-xl font-bold mb-2">作业已完成！</h3>
+          <p class="text-2xl font-bold ${s.score > 0 ? 'text-emerald-600' : 'text-gray-600'} mb-1">${s.score} 分</p>
+          ${s.rank ? `<p class="text-amber-600 font-medium">🏅 第 ${s.rank} 名提交，额外 +${s.rank_bonus} 分！</p>` : ''}
+          ${s.graded === 0 ? '<p class="text-sm text-gray-500 mt-2">含简答题，等老师批改后会给你等第和评语，批改完会通知你哦～</p>' : ''}
+          ${s.grade ? `<div class="inline-block mt-3"><span class="text-white text-xl font-bold px-4 py-2 rounded-xl ${GRADE_STYLE[s.grade] || 'bg-gray-400'}">${esc(s.grade)}</span></div>` : ''}
+          ${s.comment ? `<p class="mt-3 bg-amber-50 rounded-xl px-4 py-3 text-sm inline-block">💬 ${esc(s.comment)}</p>` : ''}
+          <div class="mt-6"><button onclick="sNav('assignment')" class="bg-sky-500 text-white px-6 py-2.5 rounded-lg font-medium">返回作业列表</button></div>
+        </div>`;
+      return;
+    }
+    if (r.assignment.deadline < Date.now()) { toast('作业已截止', false); return; }
+    S.cur = { id, assignment: r.assignment, answers: r.assignment.questions.map(() => '') };
+    $('#s-adetail').classList.remove('hidden');
+    $$('.s-sec').forEach(el => { if (el.id !== 's-adetail') el.classList.add('hidden'); });
+    renderSAssignment();
+  } catch (e) { toast(e.message, false); }
+}
+function renderSAssignment() {
+  const a = S.cur.assignment;
+  $('#s-adetail-box').innerHTML = `
+    <div class="bg-white rounded-2xl p-6 shadow-sm mb-4">
+      <h3 class="text-lg font-bold">${esc(a.title)}</h3>
+      <p class="text-sm text-gray-500 mt-1">${a.questions.length} 道题 · 满分 ${a.questions.reduce((s, q) => s + q.points, 0)} 分</p>
+      <p class="text-sm text-red-500 mt-1" data-dl="${a.deadline}">⏰ 截止：${fmtFull(a.deadline)}（${countdown(a.deadline)}）</p>
+      ${a.description ? `<p class="text-sm text-gray-500 mt-2 bg-gray-50 rounded-lg px-3 py-2">📢 ${esc(a.description)}</p>` : ''}
+    </div>
+    <div class="space-y-4">${a.questions.map((q, i) => `
+      <div class="bg-white rounded-2xl p-5 shadow-sm">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="bg-sky-100 text-sky-700 text-xs px-2 py-1 rounded">${TYPE_ICON[q.type]} ${TYPE_NAME[q.type]}</span>
+          <span class="text-xs text-gray-400">${q.points} 分</span>
+        </div>
+        <p class="font-medium mb-3">${i + 1}. ${esc(q.content)}</p>
+        ${q.type === 'choice' ? q.options.map((o, j) => `
+          <button onclick="pickOption(${i}, ${j}, this)" class="w-full text-left p-3 border border-gray-200 rounded-xl hover:border-sky-400 transition mb-2" data-q="${i}" data-opt="${j}">
+            <span class="font-medium text-sky-600 mr-2">${String.fromCharCode(65 + j)}.</span>${esc(o)}
+          </button>`).join('')
+        : q.type === 'judge' ? `<div class="grid grid-cols-2 gap-3">
+            <button onclick="pickOption(${i}, 0, this)" class="p-3 border border-gray-200 rounded-xl hover:border-sky-400 transition text-center" data-q="${i}" data-opt="0">✅ 正确</button>
+            <button onclick="pickOption(${i}, 1, this)" class="p-3 border border-gray-200 rounded-xl hover:border-sky-400 transition text-center" data-q="${i}" data-opt="1">❌ 错误</button>
+          </div>`
+        : q.type === 'fill' ? `<input placeholder="请输入答案" data-q="${i}" oninput="S.cur.answers[${i}]=this.value" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-sky-400">`
+        : `<textarea rows="3" placeholder="写下你的答案，老师会给你批改" data-q="${i}" oninput="S.cur.answers[${i}]=this.value" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-sky-400"></textarea>`}
+      </div>`).join('')}</div>
+    <div class="bg-white rounded-2xl p-4 shadow-sm mt-4">
+      <button onclick="submitSAssignment()" class="w-full bg-gradient-to-r from-sky-500 to-emerald-500 text-white py-3.5 rounded-xl font-bold text-lg hover:opacity-90 transition">提交作业</button>
+      <p class="text-center text-xs text-gray-400 mt-2">提交后将无法修改答案 · 前 3 名提交还有额外加分哦</p>
+    </div>`;
+}
+function pickOption(qi, val, btn) {
+  S.cur.answers[qi] = String(val);
+  $$(`[data-q="${qi}"]`).forEach(b => {
+    b.classList.remove('border-sky-400', 'bg-sky-50');
+    if (b.dataset.opt === String(val)) { b.classList.add('border-sky-400', 'bg-sky-50'); }
+  });
+}
+async function submitSAssignment() {
+  if (S.cur.answers.some((ans, i) => S.cur.assignment.questions[i].type !== 'short' && ans === '')) {
+    const left = S.cur.answers.filter((ans, i) => S.cur.assignment.questions[i].type !== 'short' && ans === '').length;
+    if (!confirm(`还有 ${left} 道题未作答，确定提交吗？`)) return;
+  }
+  try {
+    const r = await api('/api/submissions', { method: 'POST', body: { assignment_id: S.cur.id, answers: S.cur.answers.map(ans => ({ answer: ans })) } });
+    toast(`提交成功！得分 ${r.submission.score} 分${r.rank ? `，第 ${r.rank} 名 +${r.rankBonus} 分` : ''}，获得 ${r.credits} 学分 🎉`);
+    refreshCredits();
+    openSAssignment(S.cur.id);
+  } catch (e) { toast(e.message, false); }
+}
+
+/* 自由练习 */
+async function loadPractice() {
+  $('#s-practice-box').innerHTML = `
+    <div class="bg-white rounded-2xl p-8 shadow-sm text-center">
+      <div class="text-5xl mb-4">🎯</div>
+      <h3 class="font-bold text-lg mb-2">自由练习</h3>
+      <p class="text-sm text-gray-500 mb-6">随机抽取题目练习，做对也能赚学分！（每天练习最多获得 60 学分）</p>
+      <div class="flex gap-3 justify-center">
+        <button onclick="startPractice(10)" class="bg-sky-500 text-white px-8 py-3 rounded-xl font-medium hover:bg-sky-600 transition">10 题一组</button>
+        <button onclick="startPractice(20)" class="bg-emerald-500 text-white px-8 py-3 rounded-xl font-medium hover:bg-emerald-600 transition">20 题一组</button>
+      </div>
+    </div>`;
+}
+async function startPractice(n) {
+  try {
+    const r = await api('/api/questions/practice?limit=' + n);
+    if (!r.questions.length) return toast('老师还没有创建题目，耐心等待一下吧！', false);
+    S.pr = { qs: r.questions, answers: r.questions.map(() => ''), idx: 0, result: [] };
+    renderPracticeQ();
+  } catch (e) { toast(e.message, false); }
+}
+function renderPracticeQ() {
+  const q = S.pr.qs[S.pr.idx];
+  $('#s-practice-box').innerHTML = `
+    <div class="bg-white rounded-2xl p-6 shadow-sm">
+      <div class="flex justify-between items-center mb-4">
+        <span class="text-sm text-gray-500">第 ${S.pr.idx + 1} / ${S.pr.qs.length} 题</span>
+        <button onclick="loadPractice()" class="text-sm text-gray-400 hover:text-red-500">退出</button>
+      </div>
+      <span class="bg-sky-100 text-sky-700 text-xs px-2 py-1 rounded">${TYPE_ICON[q.type]} ${TYPE_NAME[q.type]}</span>
+      <p class="font-medium text-lg mt-3 mb-4">${esc(q.content)}</p>
+      ${q.type === 'choice' ? q.options.map((o, j) => `
+        <button onclick="prPick(${j}, this)" class="w-full text-left p-3 border border-gray-200 rounded-xl hover:border-sky-400 transition mb-2">
+          <span class="font-medium text-sky-600 mr-2">${String.fromCharCode(65 + j)}.</span>${esc(o)}
+        </button>`).join('')
+      : q.type === 'judge' ? `<div class="grid grid-cols-2 gap-3">
+          <button onclick="prPick(0, this)" class="p-3 border border-gray-200 rounded-xl hover:border-sky-400 transition text-center">✅ 正确</button>
+          <button onclick="prPick(1, this)" class="p-3 border border-gray-200 rounded-xl hover:border-sky-400 transition text-center">❌ 错误</button>
+        </div>`
+      : `<input placeholder="请输入答案" oninput="S.pr.answers[S.pr.idx]=this.value" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-sky-400">`}
+      <button onclick="prNext()" class="w-full bg-sky-500 text-white py-3 rounded-xl font-medium mt-5 hover:bg-sky-600 transition">${S.pr.idx === S.pr.qs.length - 1 ? '提交练习' : '下一题'}</button>
+    </div>`;
+}
+function prPick(val, btn) {
+  S.pr.answers[S.pr.idx] = String(val);
+  btn.parentElement.querySelectorAll('button').forEach(b => { b.classList.remove('border-sky-400', 'bg-sky-50'); });
+  btn.classList.add('border-sky-400', 'bg-sky-50');
+}
+function prNext() {
+  if (S.pr.answers[S.pr.idx] === '') return toast('请先作答或填写答案', false);
+  if (S.pr.idx < S.pr.qs.length - 1) { S.pr.idx++; renderPracticeQ(); } else submitPractice();
+}
+async function submitPractice() {
+  try {
+    const r = await api('/api/questions/practice/submit', { method: 'POST', body: { answers: S.pr.qs.map((q, i) => ({ qid: q.id, answer: S.pr.answers[i] })) } });
+    refreshCredits();
+    $('#s-practice-box').innerHTML = `
+      <div class="bg-white rounded-2xl p-8 shadow-sm text-center">
+        <div class="text-5xl mb-3">${r.correct === r.total ? '🏆' : r.correct > r.total / 2 ? '🎉' : '💪'}</div>
+        <h3 class="text-xl font-bold mb-2">练习完成！</h3>
+        <p class="text-lg mb-1">答对 <b class="text-emerald-600">${r.correct}</b> / ${r.total} 题</p>
+        <p class="text-amber-600 font-medium mb-4">获得 ${r.earned} 学分 🎉${r.capReached ? '<span class="text-xs text-gray-400">（今日练习学分已达上限）</span>' : ''}</p>
+        <div class="flex gap-3 justify-center">
+          <button onclick="startPractice(${S.pr.qs.length})" class="bg-sky-500 text-white px-6 py-2.5 rounded-xl font-medium">再来一组</button>
+          <button onclick="sNav('home')" class="border border-gray-200 px-6 py-2.5 rounded-xl font-medium">返回首页</button>
+        </div>
+      </div>`;
+  } catch (e) { toast(e.message, false); }
+}
+
+/* 排行榜 */
+async function loadRank() {
+  try {
+    const r = await api('/api/leaderboard?scope=' + S.lbScope);
+    $('#s-rank-tip').innerHTML = `我的排名：<b class="text-sky-600">${r.myRank ? '第 ' + r.myRank + ' 名' : '未上榜'}</b> · 我的学分：<b class="text-amber-600">${r.myCredits}</b>
+      <span class="ml-2 text-xs text-gray-400">💡 前 3 名拥有专属图标，每次作业前 3 名提交额外加分并解锁新称号</span>`;
+    renderRankList(r.leaderboard);
+    S.lb = r.leaderboard;
+  } catch (e) { toast(e.message, false); }
+}
+function renderRankList(lb) {
+  const box = $('#s-rank-list');
+  if (!box) return;
+  box.innerHTML = lb.map(x => `
+    <div class="flex items-center gap-3 p-3 rounded-xl ${x.id === S.user?.id ? 'bg-sky-50 ring-1 ring-sky-200' : 'bg-gray-50/60'}">
+      <div class="w-8 text-center font-bold ${x.rank <= 3 ? 'text-xl' : 'text-sm text-gray-400'}">${x.icon || x.rank}</div>
+      <div class="flex-1">
+        <span class="font-medium">${esc(x.name)}${x.id === S.user?.id ? '<span class="text-xs text-sky-500 ml-1">（我）</span>' : ''}</span>
+        ${x.title ? `<span class="text-xs px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 ml-2">${esc(x.title)}</span>` : ''}
+      </div>
+      <span class="font-bold text-amber-600">${x.credits} 分</span>
+    </div>`).join('') || '<p class="text-center text-gray-400 py-8">暂无数据</p>';
+}
+function rankScope(scope, btn) {
+  S.lbScope = scope;
+  btn.parentElement.querySelectorAll('button').forEach(b => b.className = 'px-3 py-1.5 rounded-lg text-sm ' + (b === btn ? 'bg-sky-500 text-white' : 'bg-gray-100 text-gray-600'));
+  loadRank();
+}
+
+/* 商店 */
+let shopCat = 'food';
+async function loadShop() {
+  try {
+    const [sh, inv] = await Promise.all([api('/api/shop'), api('/api/inventory')]);
+    S.shop = sh.items; S.inv = inv.inventory;
+    renderShop();
+  } catch (e) { toast(e.message, false); }
+}
+function shopTab(cat, btn) {
+  shopCat = cat;
+  btn.parentElement.querySelectorAll('button').forEach(b => b.className = 'px-4 py-2 rounded-lg text-sm ' + (b === btn ? 'bg-sky-500 text-white' : 'bg-gray-100 text-gray-600'));
+  renderShop();
+}
+function renderShop() {
+  const box = $('#s-shop-list');
+  if (shopCat === 'bag') {
+    box.innerHTML = S.inv.length ? S.inv.map(i => `
+      <div class="bg-white rounded-2xl p-4 shadow-sm card-hover">
+        <div class="text-3xl mb-2">${i.emoji}</div>
+        <p class="font-bold">${esc(i.name)} ×${i.qty}</p>
+        <p class="text-xs text-gray-400 mt-1">${esc(i.description)}</p>
+        <button onclick="useItem(${i.id})" class="mt-3 w-full ${i.category === 'tool' ? 'bg-purple-500 hover:bg-purple-600' : 'bg-emerald-500 hover:bg-emerald-600'} text-white py-2 rounded-lg text-sm transition">
+          ${i.category === 'tool' ? '🔔 去作业中使用' : i.category === 'dress' ? '穿戴' : '使用'}
+        </button>
+      </div>`).join('') : '<p class="col-span-3 text-center text-gray-400 py-10">背包空空的，去商店兑换一些吧！💡 完成作业可以获得更多学分</p>';
+    return;
+  }
+  const items = S.shop.filter(i => i.category === shopCat);
+  box.innerHTML = items.map(i => `
+    <div class="bg-white rounded-2xl p-4 shadow-sm card-hover ${i.locked ? 'opacity-60' : ''}">
+      <div class="flex items-start justify-between">
+        <div class="text-3xl">${i.emoji}</div>
+        <span class="text-amber-600 font-bold text-sm">⭐ ${i.price}</span>
+      </div>
+      <p class="font-bold mt-2">${esc(i.name)}</p>
+      <p class="text-xs text-gray-400 mt-1 min-h-8">${esc(i.description)}</p>
+      <p class="text-xs text-emerald-600 mt-1">${i.effect.hunger ? '🍖 +' + i.effect.hunger + '饥饿值 ' : ''}${i.effect.happiness ? '😊 +' + i.effect.happiness + '愉悦值 ' : ''}${i.effect.exp ? '✨ +' + i.effect.exp + '经验 ' : ''}${i.effect.delay_min ? '⏰ 截止时间 +' + i.effect.delay_min + '分钟' : ''}</p>
+      ${i.locked ? `<p class="text-xs text-gray-400 mt-2">🔒 宠物 ${i.min_level} 级解锁</p>`
+        : `<button onclick="buyItem(${i.id})" class="mt-3 w-full bg-amber-500 hover:bg-amber-600 text-white py-2 rounded-lg text-sm transition">兑换</button>`}
+    </div>`).join('');
+}
+async function buyItem(id) {
+  try {
+    const r = await api('/api/shop/purchase', { method: 'POST', body: { item_id: id } });
+    S.user.credits = r.credits; $('#s-credits').textContent = r.credits;
+    toast(`兑换成功！获得 ${r.item.emoji} ${r.item.name}`);
+    loadShop();
+  } catch (e) { toast(e.message, false); }
+}
+async function useItem(id) {
+  try {
+    const r = await api('/api/pet/use', { method: 'POST', body: { item_id: id } });
+    toast(r.msg);
+    loadShop();
+  } catch (e) { toast(e.message, false); }
+}
+
+/* 宠物 */
+let petTabCur = 'main';
+async function loadPet() {
+  try {
+    const r = await api('/api/pet/mine');
+    S.pet = r;
+    renderPet();
+  } catch (e) { toast(e.message, false); }
+}
+function petTab(tab, btn) {
+  petTabCur = tab;
+  btn.parentElement.querySelectorAll('button').forEach(b => b.className = 'px-4 py-2 rounded-lg text-sm ' + (b === btn ? 'bg-sky-500 text-white' : 'bg-gray-100 text-gray-600'));
+  renderPet();
+}
+function unlockTag(lv, unlocked) {
+  return `<span class="text-xs px-2 py-1 rounded-lg ${unlocked ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-400'}">${unlocked ? '✅' : '🔒'} Lv.${lv} ${esc(LEVEL_UNLOCKS_UI[lv] || '')}</span>`;
+}
+const LEVEL_UNLOCKS_UI = { 2: '宠物小窝', 3: '对话安抚 · 装扮', 4: '宠物广场', 5: '专属称号', 6: '高级装扮', 7: '宠物运动会', 8: '传说皮肤', 9: '每日神秘礼盒', 10: '传说形态' };
+function renderPet() {
+  const p = S.pet.pet;
+  const box = $('#s-pet-box');
+  if (petTabCur === 'main') {
+    const locked = (lv, html) => p.level >= lv ? html : `<div class="opacity-40 pointer-events-none">${html}<p class="text-xs text-gray-400 mt-1">🔒 Lv.${lv} 解锁</p></div>`;
+    box.innerHTML = `
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-white rounded-2xl p-6 shadow-sm text-center">
+          <div class="text-8xl ${p.alive ? 'pet-bounce' : 'grayscale'} mb-4">${esc(p.emoji)}${p.hat ? esc(p.hat) : ''}${p.acc ? esc(p.acc) : ''}</div>
+          <h3 class="text-xl font-bold">${esc(p.name)}</h3>
+          <p class="text-gray-500 text-sm">${esc(p.speciesName)} · ${esc(p.stageName)} · Lv.${p.level}</p>
+          <div class="max-w-xs mx-auto mt-4">
+            <div class="flex justify-between text-xs mb-1"><span>🍖 饥饿值 ${Math.round(p.hunger)}</span></div>
+            <div class="w-full h-2.5 bg-gray-200 rounded-full"><div class="bar h-2.5 ${p.hunger > 50 ? 'bg-emerald-400' : p.hunger > 20 ? 'bg-amber-400' : 'bg-red-500'} rounded-full" style="width:${Math.min(100, p.hunger)}%"></div></div>
+            <div class="flex justify-between text-xs mb-1 mt-3"><span>😊 愉悦值 ${Math.round(p.happiness)}</span></div>
+            <div class="w-full h-2.5 bg-gray-200 rounded-full"><div class="bar h-2.5 ${p.happiness > 50 ? 'bg-emerald-400' : p.happiness > 20 ? 'bg-amber-400' : 'bg-red-500'} rounded-full" style="width:${Math.min(100, p.happiness)}%"></div></div>
+            <div class="flex justify-between text-xs mb-1 mt-3"><span>✨ 成长经验 ${p.exp}/${p.level >= 10 ? 'MAX' : p.nextExp}</span></div>
+            <div class="w-full h-2.5 bg-gray-200 rounded-full"><div class="bar h-2.5 bg-gradient-to-r from-emerald-400 to-sky-400 rounded-full" style="width:${p.level >= 10 ? 100 : Math.round(p.exp / p.nextExp * 100)}%"></div></div>
+          </div>
+          ${!p.alive ? `<button onclick="revivePet()" class="mt-5 bg-rose-500 text-white px-6 py-2.5 rounded-xl font-medium">💖 花 30 学分复活</button>` : ''}
+        </div>
+        <div class="space-y-4">
+          <div class="bg-white rounded-2xl p-5 shadow-sm">
+            <h4 class="font-bold mb-3">🍖 快速喂食</h4>
+            <div id="pet-foods" class="space-y-2"></div>
+          </div>
+          <div class="bg-white rounded-2xl p-5 shadow-sm">
+            <h4 class="font-bold mb-3">🔓 等级解锁</h4>
+            <div class="flex flex-wrap gap-2">${Object.entries(S.pet.levelUnlocks).map(([lv, u]) => unlockTag(lv, u.unlocked)).join('')}</div>
+          </div>
+          ${locked(4, `<div class="bg-white rounded-2xl p-5 shadow-sm"><h4 class="font-bold mb-2">🌐 宠物广场</h4><p class="text-sm text-gray-500 mb-3">和同学们的宠物一起玩耍！</p><button onclick="petTab('square', $$('[data-nav]')[0])" class="text-sm bg-sky-500 text-white px-4 py-2 rounded-lg">进入广场 →</button></div>`)}
+        </div>
+      </div>`;
+    renderFoods();
+  } else if (petTabCur === 'chat') {
+    if (p.level < 3) {
+      box.innerHTML = `<div class="bg-white rounded-2xl p-10 shadow-sm text-center"><div class="text-5xl mb-3">💬</div><p class="font-bold mb-1">宠物还不会说话</p><p class="text-sm text-gray-400">升到 Lv.3 解锁与宠物的对话，它可以安抚你的心情哦</p></div>`;
+      return;
+    }
+    box.innerHTML = `
+      <div class="bg-white rounded-2xl shadow-sm flex flex-col" style="height:70vh">
+        <div class="p-4 border-b"><h4 class="font-bold">💬 和 ${esc(p.name)} 聊天</h4><p class="text-xs text-gray-400">心情不好的时候和它聊聊，它会安抚你（每次安抚愉悦值 +2）</p></div>
+        <div id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-3">
+          <div class="text-left"><div class="inline-block bg-gray-100 rounded-2xl rounded-tl-sm px-4 py-2 text-sm">${esc(p.name)} 来啦～想和我说什么？</div></div>
+        </div>
+        <div class="p-3 border-t flex gap-2">
+          <input id="chat-input" placeholder="和你的宠物说说话吧..." class="flex-1 px-4 py-2 border border-gray-300 rounded-full outline-none focus:ring-2 focus:ring-sky-400" onkeydown="if(event.key==='Enter')sendChat()">
+          <button onclick="sendChat()" class="bg-sky-500 text-white px-5 py-2 rounded-full font-medium">发送</button>
+        </div>
+      </div>`;
+    $('#chat-input').focus();
+  } else if (petTabCur === 'house') {
+    if (p.level < 2) {
+      box.innerHTML = `<div class="bg-white rounded-2xl p-10 shadow-sm text-center"><div class="text-5xl mb-3">🏡</div><p class="font-bold mb-1">小窝还没解锁</p><p class="text-sm text-gray-400">升到 Lv.2 解锁宠物的小窝</p></div>`;
+      return;
+    }
+    box.innerHTML = `
+      <div class="bg-gradient-to-b from-sky-100 to-emerald-50 rounded-2xl p-8 shadow-sm text-center relative overflow-hidden">
+        <div class="text-6xl absolute left-8 top-6 opacity-30">🌙</div><div class="text-5xl absolute right-10 top-10 opacity-30">⭐</div>
+        <p class="text-xs text-gray-500 mb-6">🏡 ${esc(p.name)} 的小窝（Lv.${p.level}）</p>
+        <div class="text-8xl mb-4">🛖</div>
+        <div class="text-7xl pet-bounce inline-block">${esc(p.emoji)}${p.hat ? esc(p.hat) : ''}${p.acc ? esc(p.acc) : ''}</div>
+        <p class="text-sm text-gray-500 mt-6">温暖的小窝是宠物成长的港湾～ 愉悦值越高，宠物成长越快！</p>
+        <button onclick="sNav('shop')" class="mt-4 bg-emerald-500 text-white px-5 py-2 rounded-xl text-sm font-medium">🛍️ 去商店买装饰和玩具</button>
+      </div>`;
+  } else if (petTabCur === 'dress') {
+    if (p.level < 3) {
+      box.innerHTML = `<div class="bg-white rounded-2xl p-10 shadow-sm text-center"><div class="text-5xl mb-3">🎀</div><p class="font-bold mb-1">装扮还没解锁</p><p class="text-sm text-gray-400">升到 Lv.3 解锁宠物装扮，商店里的装扮用品可以穿戴</p></div>`;
+      return;
+    }
+    const ownedDress = S.inv ? S.inv.filter(i => i.category === 'dress') : [];
+    box.innerHTML = `
+      <div class="bg-white rounded-2xl p-6 shadow-sm">
+        <h4 class="font-bold mb-1">🎀 宠物装扮</h4>
+        <p class="text-sm text-gray-400 mb-4">当前装扮：${p.hat ? p.hat + ' ' + (p.acc || '') : '（无）'}。在商店兑换装扮用品后，到「我的背包」点击穿戴</p>
+        <div class="text-center py-6"><div class="text-8xl">${esc(p.emoji)}${p.hat ? esc(p.hat) : ''}${p.acc ? esc(p.acc) : ''}</div></div>
+        ${ownedDress.length ? `<div class="grid grid-cols-4 gap-3">${ownedDress.map(i => `
+          <div class="border border-gray-200 rounded-xl p-3 text-center">
+            <div class="text-3xl">${i.emoji}</div><p class="text-xs mt-1">${esc(i.name)} ×${i.qty}</p>
+            <button onclick="useItem(${i.id})" class="mt-2 text-xs bg-sky-500 text-white px-3 py-1 rounded">穿戴</button>
+          </div>`).join('')}</div>` : `<p class="text-center text-sm text-gray-400">还没有装扮，去商店兑换吧！</p>`}
+      </div>`;
+  } else if (petTabCur === 'square') {
+    if (p.level < 4) {
+      box.innerHTML = `<div class="bg-white rounded-2xl p-10 shadow-sm text-center"><div class="text-5xl mb-3">🌐</div><p class="font-bold mb-1">宠物广场还没解锁</p><p class="text-sm text-gray-400">升到 Lv.4 解锁，可以和其他同学的宠物交流</p></div>`;
+      return;
+    }
+    loadSquare(box);
+  } else if (petTabCur === 'more') {
+    box.innerHTML = `
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl p-5 shadow-sm ${p.level < 5 ? 'opacity-50' : ''}">
+          <div class="text-3xl mb-2">🏅</div><h4 class="font-bold mb-1">专属称号 <span class="text-xs text-gray-400">Lv.5</span></h4>
+          <p class="text-xs text-gray-400 mb-3">学分达到一定数量解锁称号，显示在排行榜上</p>
+          ${p.level >= 5 ? `<div class="space-y-2">${S.pet.titles.map(t => {
+            const owned = S.pet.totalCredits >= t.min;
+            return `<button onclick="setTitle('${esc(t.name)}')" class="w-full text-left px-3 py-2 rounded-lg text-sm ${S.pet.myTitle === t.name ? 'bg-amber-100 text-amber-700' : owned ? 'bg-gray-50 hover:bg-sky-50' : 'bg-gray-50 text-gray-400'}">${owned ? '✅' : '🔒'} ${esc(t.name)} ${owned ? '' : '（' + t.min + '学分）'}</button>`;
+          }).join('')}</div>` : '<p class="text-sm text-gray-400">🔒 宠物 Lv.5 解锁</p>'}
+        </div>
+        <div class="bg-white rounded-2xl p-5 shadow-sm ${p.level < 7 ? 'opacity-50' : ''}">
+          <div class="text-3xl mb-2">🎮</div><h4 class="font-bold mb-1">宠物运动会 <span class="text-xs text-gray-400">Lv.7</span></h4>
+          <p class="text-xs text-gray-400 mb-3">猜点数，猜中得 5 学分，每天 3 次机会</p>
+          ${p.level >= 7 ? `<div class="flex gap-1 justify-center mb-3">${[1, 2, 3, 4, 5, 6].map(n => `<button onclick="playRace(${n})" class="w-9 h-9 rounded-lg bg-gray-50 hover:bg-sky-100 font-bold text-sm">${n}</button>`).join('')}</div>
+          <p id="race-result" class="text-xs text-center text-gray-500"></p>` : '<p class="text-sm text-gray-400">🔒 宠物 Lv.7 解锁</p>'}
+        </div>
+        <div class="bg-white rounded-2xl p-5 shadow-sm ${p.level < 9 ? 'opacity-50' : ''}">
+          <div class="text-3xl mb-2">🎁</div><h4 class="font-bold mb-1">每日神秘礼盒 <span class="text-xs text-gray-400">Lv.9</span></h4>
+          <p class="text-xs text-gray-400 mb-3">每天可领 10-30 学分</p>
+          ${p.level >= 9 ? `<button onclick="claimLottery()" class="w-full bg-amber-500 text-white py-2 rounded-lg text-sm">🎁 领取今日礼盒</button>` : '<p class="text-sm text-gray-400">🔒 宠物 Lv.9 解锁</p>'}
+        </div>
+        <div class="bg-white rounded-2xl p-5 shadow-sm col-span-2">
+          <div class="text-3xl mb-2">🐾</div><h4 class="font-bold mb-3">进化图鉴</h4>
+          <div class="grid grid-cols-4 gap-3 text-center">
+            ${(() => {
+              const stages = [1, 4, 7, 10];
+              const sEmojis = { cat: ['🐱', '😺', '👑', '🐯'], dog: ['🐶', '🐕', '👑', '🐺'], dragon: ['🐲', '🐉', '👑', '🌋'], fox: ['🦊', '✨🦊', '👑', '🌟'], dino: ['🦕', '🦖', '👑', '🌋'], penguin: ['🐧', '🎩🐧', '👑', '❄️'] };
+              const names = ['幼年期', '成长期', '王者期', '传说形态'];
+              const emojis = sEmojis[p.species] || sEmojis.cat;
+              return stages.map((lv, i) => `
+                <div class="${p.level >= lv ? '' : 'opacity-40'}">
+                  <div class="text-4xl mb-1">${emojis[i]}</div>
+                  <p class="text-xs font-medium">${names[i]}</p>
+                  <p class="text-xs text-gray-400">${p.level >= lv ? '已解锁' : 'Lv.' + lv + ' 解锁'}</p>
+                </div>`).join('');
+            })()}
+          </div>
+        </div>
+      </div>`;
+  }
+}
+function renderFoods() {
+  const foods = S.inv ? S.inv.filter(i => i.category === 'food') : [];
+  $('#pet-foods').innerHTML = foods.length ? foods.map(i => `
+    <div class="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-2.5">
+      <span>${i.emoji} ${esc(i.name)} <span class="text-xs text-gray-400">×${i.qty} · 🍖+${i.effect.hunger || 0}</span></span>
+      <button onclick="useItem(${i.id})" class="text-sm bg-emerald-500 text-white px-4 py-1.5 rounded-lg hover:bg-emerald-600 transition">喂食</button>
+    </div>`).join('') : '<p class="text-sm text-gray-400">还没有食物，去商店兑换一些吧！</p>';
+}
+async function revivePet() {
+  if (!confirm('花 30 学分复活宠物，确定吗？')) return;
+  try {
+    const r = await api('/api/pet/revive', { method: 'POST' });
+    toast(r.msg); refreshCredits();
+    if (petTabCur === 'main') loadPet(); else loadStudentHome();
+  } catch (e) { toast(e.message, false); }
+}
+async function sendChat() {
+  const input = $('#chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  const box = $('#chat-box');
+  box.insertAdjacentHTML('beforeend', `<div class="text-right"><div class="inline-block bg-sky-500 text-white rounded-2xl rounded-tr-sm px-4 py-2 text-sm">${esc(msg)}</div></div>`);
+  input.value = '';
+  box.scrollTop = box.scrollHeight;
+  try {
+    const r = await api('/api/pet/chat', { method: 'POST', body: { message: msg } });
+    setTimeout(() => {
+      box.insertAdjacentHTML('beforeend', `<div class="text-left"><div class="inline-block bg-gray-100 rounded-2xl rounded-tl-sm px-4 py-2 text-sm">${esc(r.reply)}</div></div>`);
+      box.scrollTop = box.scrollHeight;
+    }, 400);
+  } catch (e) { toast(e.message, false); }
+}
+async function loadSquare(box) {
+  try {
+    const r = await api('/api/pet/square');
+    box.innerHTML = `
+      <div class="bg-white rounded-2xl p-6 shadow-sm">
+        <h4 class="font-bold mb-4">🌐 宠物广场 <span class="text-xs text-gray-400 font-normal">Lv.4 解锁 · 和同学们的宠物交流</span></h4>
+        <div class="flex gap-2 mb-4">
+          <input id="sq-input" maxlength="100" placeholder="替你的宠物发条动态吧..." class="flex-1 px-4 py-2 border border-gray-300 rounded-full outline-none focus:ring-2 focus:ring-sky-400">
+          <button onclick="postSquare()" class="bg-sky-500 text-white px-5 py-2 rounded-full font-medium">发布</button>
+        </div>
+        <div class="space-y-3">${r.posts.map(post => {
+          const sp = SPECIES_STAGES[post.species] || ['🐾'];
+          const stageIdx = post.level >= 10 ? 3 : post.level >= 7 ? 2 : post.level >= 4 ? 1 : 0;
+          return `<div class="border border-gray-100 rounded-xl p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-2xl">${sp[stageIdx]}${post.hat || ''}${post.acc || ''}</span>
+              <span class="text-sm font-medium">${esc(post.uname)} 的宠物 <span class="text-xs text-gray-400">Lv.${post.level}</span></span>
+              <span class="text-xs text-gray-300 ml-auto">${fmtDT(post.created_at)}</span>
+            </div>
+            <p class="text-sm">${esc(post.content)}</p>
+            <button onclick="likePost(${post.id})" class="text-xs mt-2 ${post.liked ? 'text-pink-500' : 'text-gray-400'} hover:text-pink-500">${post.liked ? '❤️' : '🤍'} ${post.likes.length}</button>
+          </div>`;
+        }).join('') || '<p class="text-center text-gray-400 py-8">广场空空的，来发第一条动态吧！</p>'}</div>
+      </div>`;
+  } catch (e) { toast(e.message, false); }
+}
+const SPECIES_STAGES = { cat: ['🐱', '😺', '👑', '🐯'], dog: ['🐶', '🐕', '👑', '🐺'], dragon: ['🐲', '🐉', '👑', '🌋'], fox: ['🦊', '✨🦊', '👑', '🌟'], dino: ['🦕', '🦖', '👑', '🌋'], penguin: ['🐧', '🎩🐧', '👑', '❄️'] };
+async function postSquare() {
+  const v = $('#sq-input').value.trim();
+  if (!v) return toast('写点什么吧', false);
+  try { await api('/api/pet/square', { method: 'POST', body: { content: v } }); toast('发布成功！'); loadSquare($('#s-pet-box')); } catch (e) { toast(e.message, false); }
+}
+async function likePost(id) {
+  try { await api(`/api/pet/square/${id}/like`, { method: 'POST' }); loadSquare($('#s-pet-box')); } catch (e) { toast(e.message, false); }
+}
+async function setTitle(name) {
+  try { await api('/api/pet/title', { method: 'POST', body: { title: name } }); toast('称号已更新：' + name); loadPet(); } catch (e) { toast(e.message, false); }
+}
+async function playRace(guess) {
+  try {
+    const r = await api('/api/pet/race', { method: 'POST', body: { guess } });
+    $('#race-result').innerHTML = r.win
+      ? `🎉 你猜了 ${r.guess}，骰子出 ${r.dice}！猜中啦 +5 学分！还剩下 ${r.chanceLeft} 次机会`
+      : `😅 你猜了 ${r.guess}，骰子出 ${r.dice}，没猜中。还剩下 ${r.chanceLeft} 次机会`;
+    refreshCredits();
+  } catch (e) { toast(e.message, false); }
+}
+async function claimLottery() {
+  try {
+    const r = await api('/api/pet/lottery', { method: 'POST' });
+    toast(`🎁 打开神秘礼盒，获得 ${r.amount} 学分！`);
+    refreshCredits();
+  } catch (e) { toast(e.message, false); }
+}
+
+/* ================= 对战 ================= */
+let B = null;
+function openBattle(assignmentId) {
+  B = { assignmentId, phase: 'joining' };
+  $('#view-battle').classList.remove('hidden');
+  $('#battle-box').innerHTML = `
+    <div class="bg-white rounded-2xl p-10 text-center">
+      <div class="text-6xl pet-bounce mb-4">⚔️</div>
+      <h3 class="text-xl font-bold mb-2">正在寻找对手...</h3>
+      <p class="text-sm text-gray-500">等待其他在线同学加入对战</p>
+      <div class="mt-6 flex justify-center"><div class="w-8 h-8 border-4 border-sky-200 border-t-sky-500 rounded-full animate-spin"></div></div>
+      <button onclick="cancelBattle()" class="mt-6 text-sm text-gray-400 hover:text-red-500">取消排队</button>
+    </div>`;
+  sendWSMsg({ t: 'battle', a: 'join', assignmentId });
+}
+function cancelBattle() {
+  sendWSMsg({ t: 'battle', a: 'cancel' });
+  closeBattle();
+}
+function closeBattle() { $('#view-battle').classList.add('hidden'); B = null; pendingBattleNext = null; }
+function handleBattleMsg(m) {
+  if (!B && m.a !== 'end') { if (m.a === 'error') { toast(m.msg, false); closeBattle(); } return; }
+  if (m.a === 'waiting') {
+    $('#battle-box').innerHTML = `
+      <div class="bg-white rounded-2xl p-10 text-center">
+        <div class="text-6xl pet-bounce mb-4">⏳</div>
+        <h3 class="text-xl font-bold mb-2">排队中...（第 ${m.pos} 位）</h3>
+        <p class="text-sm text-gray-500">等待其他在线同学加入对战</p>
+        <div class="mt-6 flex justify-center"><div class="w-8 h-8 border-4 border-sky-200 border-t-sky-500 rounded-full animate-spin"></div></div>
+        <button onclick="cancelBattle()" class="mt-6 text-sm text-gray-400 hover:text-red-500">取消排队</button>
+      </div>`;
+  }
+  if (m.a === 'start') {
+    B.opponent = m.opponent; B.total = m.total; B.idx = 0; B.myScore = 0; B.oppScore = 0; B.roundStart = Date.now();
+    B.phase = 'countdown';
+    renderBattleCountdown(() => { B.phase = 'question'; B.question = m.question; renderBattleQ(); });
+  }
+  if (m.a === 'round') {
+    B.myScore = m.total1; B.oppScore = m.total2;
+    pendingBattleNext = null;
+    renderBattleRound(m);
+  }
+  if (m.a === 'next') {
+    if (B && B.phase === 'result') { pendingBattleNext = m; }
+    else if (B) { B.idx = m.idx; B.question = m.question; B.roundStart = Date.now(); B.phase = 'question'; renderBattleQ(); }
+  }
+  if (m.a === 'end') {
+    B.phase = 'end';
+    renderBattleEnd(m);
+    refreshCredits();
+  }
+  if (m.a === 'error') { toast(m.msg, false); closeBattle(); }
+}
+function renderBattleCountdown(done) {
+  $('#battle-box').innerHTML = `
+    <div class="bg-white rounded-2xl p-10 text-center">
+      <p class="text-lg mb-1">⚔️ 匹配成功！</p>
+      <p class="text-sm text-gray-500 mb-6">对手：${esc(B.opponent.name)}（${B.opponent.credits} 学分）</p>
+      <div id="btl-count" class="text-7xl font-black text-sky-500">3</div>
+      <p class="text-xs text-gray-400 mt-4">每道题：又快又对 +3 分 · 对但慢 +1 分 · 答错 0 分</p>
+    </div>`;
+  let n = 3;
+  const iv = setInterval(() => {
+    n--;
+    if (n <= 0) { clearInterval(iv); done(); }
+    else { const el = $('#btl-count'); if (el) { el.textContent = n; el.classList.add('shake'); setTimeout(() => el.classList.remove('shake'), 400); } }
+  }, 700);
+}
+function renderBattleQ() {
+  const q = B.question;
+  $('#battle-box').innerHTML = `
+    <div class="bg-white rounded-2xl p-6">
+      <div class="flex justify-between items-center mb-3">
+        <span class="text-sm font-medium text-gray-500">第 ${B.idx + 1} / ${B.total} 题</span>
+        <span class="text-sm">⚡ <span id="btl-time" class="font-bold">60</span>s</span>
+      </div>
+      <div class="flex justify-between items-center mb-4 bg-slate-50 rounded-xl px-4 py-2">
+        <span class="font-medium text-sky-600">我：${B.myScore} 分</span>
+        <span class="text-sm text-gray-400">VS</span>
+        <span class="font-medium text-purple-600">${esc(B.opponent.name)}：${B.oppScore} 分</span>
+      </div>
+      <span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded">${TYPE_ICON[q.type]} ${TYPE_NAME[q.type]} · ${q.points} 分</span>
+      <p class="font-bold text-lg mt-3 mb-4">${esc(q.content)}</p>
+      <div id="btl-answers">${q.type === 'choice' ? q.options.map((o, j) => `
+        <button onclick="battleAnswer('${j}')" class="w-full text-left p-3 border border-gray-200 rounded-xl hover:border-purple-400 transition mb-2">
+          <span class="font-medium text-purple-600 mr-2">${String.fromCharCode(65 + j)}.</span>${esc(o)}
+        </button>`).join('')
+      : q.type === 'judge' ? `<div class="grid grid-cols-2 gap-3">
+          <button onclick="battleAnswer('0')" class="p-3 border border-gray-200 rounded-xl hover:border-purple-400 transition text-center">✅ 正确</button>
+          <button onclick="battleAnswer('1')" class="p-3 border border-gray-200 rounded-xl hover:border-purple-400 transition text-center">❌ 错误</button>
+        </div>`
+      : `<input id="btl-input" placeholder="输入你的答案，回车提交" onkeydown="if(event.key==='Enter')battleAnswer(this.value)" class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-purple-400">
+         <button onclick="battleAnswer($('#btl-input').value)" class="mt-3 w-full bg-purple-500 text-white py-2.5 rounded-lg font-medium">提交答案</button>`}
+      </div>
+    </div>`;
+  B.timerIv = setInterval(() => {
+    const left = 60 - Math.floor((Date.now() - B.roundStart) / 1000);
+    const el = $('#btl-time');
+    if (el) { el.textContent = Math.max(0, left); el.className = 'font-bold ' + (left <= 10 ? 'text-red-500' : ''); }
+  }, 500);
+}
+let battleAnswered = false;
+function battleAnswer(ans) {
+  if (battleAnswered || B.phase !== 'question') return;
+  battleAnswered = true;
+  clearInterval(B.timerIv);
+  sendWSMsg({ t: 'battle', a: 'answer', ans: String(ans) });
+  $('#btl-answers').innerHTML = '<p class="text-center text-gray-400 py-4">答案已提交，等待对手作答...</p>';
+}
+function renderBattleRound(m) {
+  B.phase = 'result';
+  $('#battle-box').innerHTML = `
+    <div class="bg-white rounded-2xl p-8 text-center battle-flash">
+      <div class="text-5xl mb-3">${m.myScore > m.oppScore ? '⚡' : m.myScore === m.oppScore ? '🤝' : '💪'}</div>
+      <h3 class="text-xl font-bold mb-4">第 ${m.idx + 1} 题结果</h3>
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="rounded-xl p-4 ${m.myScore > m.oppScore ? 'bg-emerald-50' : 'bg-gray-50'}">
+          <p class="text-sm font-medium mb-1">我</p>
+          <p class="text-lg font-bold ${m.myScore > 0 ? 'text-emerald-600' : 'text-gray-400'}">+${m.myScore} 分</p>
+          <p class="text-xs ${m.myCorrect ? 'text-emerald-500' : 'text-red-400'}">${m.myCorrect ? '✔ 答对' : '✘ 答错/未答'}</p>
+        </div>
+        <div class="rounded-xl p-4 ${m.oppScore > m.myScore ? 'bg-emerald-50' : 'bg-gray-50'}">
+          <p class="text-sm font-medium mb-1">${esc(B.opponent.name)}</p>
+          <p class="text-lg font-bold ${m.oppScore > 0 ? 'text-emerald-600' : 'text-gray-400'}">+${m.oppScore} 分</p>
+          <p class="text-xs ${m.oppCorrect ? 'text-emerald-500' : 'text-red-400'}">${m.oppCorrect ? '✔ 答对' : '✘ 答错/未答'}</p>
+        </div>
+      </div>
+      <p class="text-sm text-gray-500">正确答案：<b>${esc(m.answer)}</b></p>
+      <p class="text-xs text-gray-400 mt-2">当前比分 ${m.total1} : ${m.total2}</p>
+    </div>`;
+  setTimeout(() => {
+    if (pendingBattleNext) { B.idx = pendingBattleNext.idx; B.question = pendingBattleNext.question; B.roundStart = Date.now(); B.phase = 'question'; pendingBattleNext = null; battleAnswered = false; renderBattleQ(); }
+  }, 1800);
+}
+function renderBattleEnd(m) {
+  const win = m.myTotal > m.oppTotal;
+  const myCredits = m.myTotal * 2;
+  $('#battle-box').innerHTML = `
+    <div class="bg-white rounded-2xl p-10 text-center">
+      <div class="text-7xl mb-4">${win ? '🏆' : m.myTotal === m.oppTotal ? '🤝' : '🎖️'}</div>
+      <h3 class="text-2xl font-black mb-1">${win ? '对战胜利！' : m.myTotal === m.oppTotal ? '平局！' : '虽败犹荣！'}</h3>
+      <p class="text-gray-500 mb-6">${esc(B.opponent.name)}${m.forfeit ? ' 中途退出' : ''}</p>
+      <div class="flex justify-center items-center gap-6 mb-6">
+        <div><p class="text-sm text-gray-400">我</p><p class="text-4xl font-black ${win ? 'text-emerald-500' : 'text-gray-600'}">${m.myTotal}</p></div>
+        <span class="text-2xl text-gray-300">:</span>
+        <div><p class="text-sm text-gray-400">${esc(B.opponent.name)}</p><p class="text-4xl font-black ${win ? 'text-gray-400' : 'text-purple-500'}">${m.oppTotal}</p></div>
+      </div>
+      <p class="text-amber-600 font-medium mb-6">获得 ${myCredits} 学分（对战得分 ×2）🎉</p>
+      <button onclick="closeBattle();sNav('home')" class="bg-gradient-to-r from-sky-500 to-emerald-500 text-white px-8 py-3 rounded-xl font-bold">返回首页</button>
+    </div>`;
+  battleAnswered = false;
+}
+
+/* ================= 全局定时器 ================= */
+setInterval(() => {
+  $$('[data-dl]').forEach(el => { el.textContent = '⏰ ' + countdown(Number(el.dataset.dl)); });
+}, 1000);
+
+/* ================= 启动 ================= */
+(async function boot() {
+  if (S.token) {
+    try {
+      const r = await api('/api/auth/me');
+      S.user = r.user;
+      connectWS();
+      if (S.user.role === 'teacher') {
+        const cls = await api('/api/classes');
+        if (!cls.classes.length) return showView('wizard');
+        showView('teacher');
+      } else showView('student');
+      return;
+    } catch (e) { S.token = ''; localStorage.removeItem('cp_token'); }
+  }
+  showView('login');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+data/
+bin/
+*.log
+public-url.txt
+start-history.log
+.DS_Store

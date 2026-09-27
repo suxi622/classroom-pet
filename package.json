@@ -1,0 +1,13 @@
+{
+  "name": "classroom-pet",
+  "version": "1.0.0",
+  "description": "课堂互动乐园 - 答题赚学分，快乐养宠物（教师端/学生端）",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT"
+}
